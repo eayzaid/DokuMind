@@ -5,7 +5,8 @@ import lombok.Data;
 
 import java.util.UUID;
 
-@Entity
+// the client name was necessary as the "user" name is reserved for postgres
+@Entity(name="client")
 @Data
 public class User {
     @Id
