@@ -4,10 +4,10 @@ import lombok.Getter;
 
 @Getter
 public enum Role {
-    SUPER_RH("Super_RH"),
+    SUPER_RH("SUPER_RH"),
     RH("RH"),
-    ASSISTANT("Assistant"),
-    WORKER("Worker");
+    ASSISTANT("ASSISTANT"),
+    WORKER("WORKER");
     
     private final String roleLabel;
     
