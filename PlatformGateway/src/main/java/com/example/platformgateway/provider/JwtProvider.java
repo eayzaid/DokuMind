@@ -1,8 +1,8 @@
 package com.example.platformgateway.provider;
+import com.example.platformgateway.exception.TokenValidityException;
 import com.example.platformgateway.model.entity.User;
 import com.example.platformgateway.repository.RefreshTokenRepository;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -46,6 +46,20 @@ public class JwtProvider {
 
     public String getRefreshToken(User user){
         return getToken(user,refreshTokenSecret);
+    }
+
+    public Claims validateRefreshToken (String refreshToken ) throws TokenValidityException {
+        try {
+            return Jwts.parser()
+                    .verifyWith(getSecret(refreshTokenSecret))
+                    .build()
+                    .parseSignedClaims(refreshToken)
+                    .getPayload();
+        }catch (ExpiredJwtException e){
+            throw new TokenValidityException("Token has expired");
+        }catch (JwtException e){
+            throw new TokenValidityException("Token is invalid");
+        }
     }
 
 }

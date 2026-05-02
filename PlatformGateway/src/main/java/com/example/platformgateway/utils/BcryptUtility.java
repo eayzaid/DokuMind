@@ -10,4 +10,7 @@ public class BcryptUtility{
         return BCrypt.checkpw(password , correctPasswordHashed);
     }
 
+    public static String hashPassword(String password){
+        return BCrypt.hashpw(password , BCrypt.gensalt());
+    }
 }
