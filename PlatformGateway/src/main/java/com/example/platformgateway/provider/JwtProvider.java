@@ -1,11 +1,13 @@
 package com.example.platformgateway.provider;
 import com.example.platformgateway.exception.TokenValidityException;
+import com.example.platformgateway.model.entity.RefreshToken;
 import com.example.platformgateway.model.entity.User;
 import com.example.platformgateway.repository.RefreshTokenRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.crypto.SecretKey;
 import java.time.Instant;
@@ -22,6 +24,13 @@ public class JwtProvider {
     @Value("${application.secret.refresh_token}")
     private String refreshTokenSecret;
 
+    @Value("${application.expiration.access_token}")
+    Long accessTokenExpirationSeconds;
+
+    @Value("${application.expiration.refresh_token}")
+    Long refreshTokenExpirationSeconds;
+
+
     public JwtProvider ( RefreshTokenRepository refreshTokenRepository ){
         this.refreshTokenRepository = refreshTokenRepository;
     }
@@ -30,26 +39,35 @@ public class JwtProvider {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    private String getToken(User user , String secret){
+    private String getToken(User user , String secret , Long expirationSeconds ){
         return Jwts.builder()
                 .subject(user.getId().toString())
                 .issuedAt(Date.from(Instant.now()))
-                .expiration(Date.from(Instant.now().plusSeconds(3600)))
+                .expiration(Date.from(Instant.now().plusSeconds(expirationSeconds)))
                 .claim("role", user.getRole().name())
                 .signWith(getSecret(secret))
                 .compact();
     }
 
     public String getAccessToken(User user){
-        return getToken(user,accessTokenSecret);
+        return getToken(user,accessTokenSecret,this.accessTokenExpirationSeconds);
     }
 
+    @Transactional
     public String getRefreshToken(User user){
-        return getToken(user,refreshTokenSecret);
+        String token = getToken(user,refreshTokenSecret,this.refreshTokenExpirationSeconds);
+        RefreshToken refreshTokenRecord = RefreshToken.builder().token(token).client(user).build();
+        refreshTokenRepository.deleteByClient(user);
+        refreshTokenRepository.flush();
+        refreshTokenRepository.save(refreshTokenRecord);
+        return token;
     }
 
-    public Claims validateRefreshToken (String refreshToken ) throws TokenValidityException {
+    public Claims validateRefreshToken (String refreshToken) throws TokenValidityException {
         try {
+            if( refreshTokenRepository.findByToken(refreshToken) == null){
+                throw new TokenValidityException("Token has expired");
+            }
             return Jwts.parser()
                     .verifyWith(getSecret(refreshTokenSecret))
                     .build()
