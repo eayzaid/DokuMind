@@ -76,7 +76,7 @@ public class AuthService {
         ResponseCookie refreshToken = ResponseCookie.from("refresh_token", jwtProvider.getRefreshToken(user))
                 .httpOnly(true)
                 .secure(true)
-                .path("/auth/refresh")
+                .path("/auth/refresh") // it's only used for refreshing the access token ONLY
                 .maxAge(7 * 24 * 3600) // 7 days
                 .build();
 
