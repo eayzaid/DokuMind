@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-main: #fff8ea;
+    --accent-primary: #9e7676;
+    --accent-secondary: #815b5b;
+    --text-main: #594545;
+    --border-subtle: rgba(129, 91, 91, 0.25);
+    --shadow-warm: 0 4px 24px rgba(89, 69, 69, 0.1);
+  }
+
+  body {
+    @apply bg-doku-cream font-body text-doku-chocolate antialiased;
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
