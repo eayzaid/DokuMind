@@ -14,7 +14,7 @@ import io.jsonwebtoken.Claims;
 import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -26,11 +26,14 @@ public class AuthService {
     private final UserRepository userRepository ;
     private final CompanyRepository companyRepository ;
     private final JwtProvider jwtProvider ;
+    private final TransactionTemplate transactionTemplate;
 
-    public AuthService(UserRepository userRepository , JwtProvider jwtProvider , CompanyRepository companyRepository){
+    public AuthService(UserRepository userRepository , JwtProvider jwtProvider , CompanyRepository companyRepository,
+                       TransactionTemplate transactionTemplate){
         this.userRepository = userRepository;
         this.companyRepository = companyRepository;
         this.jwtProvider = jwtProvider;
+        this.transactionTemplate = transactionTemplate;
     }
 
     public Pair<AccessTokenDTO , ResponseCookie> authenticateClient(LoginRequestDTO loginRequestDTO) throws BadCredentialsException{
@@ -40,7 +43,6 @@ public class AuthService {
                 .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
     }
 
-    @Transactional
     public Pair<AccessTokenDTO , ResponseCookie> registerClient(SignUpRequestDTO signupRequestDTO) throws BadCredentialsException{
 
         if (userRepository.existsByEmail(signupRequestDTO.email())) {
@@ -59,10 +61,14 @@ public class AuthService {
                 .role(Role.SUPER_RH)
                 .build();
 
-        companyRepository.save(company);
-        userRepository.save(newUser);
+        User savedUser = transactionTemplate.execute(status -> {
+            Company savedCompany = companyRepository.save(company);
+            newUser.setCompany(savedCompany);
+            return userRepository.save(newUser);
+        });
 
-        return this.buildAuthTokens(newUser);
+
+        return this.buildAuthTokens(savedUser);
     }
 
     public AccessTokenDTO refreshAccessToken(String refreshToken) throws BadCredentialsException {
