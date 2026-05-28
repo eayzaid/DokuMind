@@ -2,8 +2,8 @@ package com.example.platformgateway.controller;
 
 
 import com.example.platformgateway.model.dto.AccessTokenDTO;
-import com.example.platformgateway.model.dto.LoginDTO;
-import com.example.platformgateway.model.dto.SignUpDTO;
+import com.example.platformgateway.model.dto.LoginRequestDTO;
+import com.example.platformgateway.model.dto.SignUpRequestDTO;
 import com.example.platformgateway.service.AuthService;
 import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.http.ResponseCookie;
@@ -22,17 +22,21 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AccessTokenDTO> login(@Validated @RequestBody LoginDTO loginDto ){
-        Pair<AccessTokenDTO , ResponseCookie> authResult = authService.authenticateClient(loginDto);
-        return ResponseEntity.ok().header("Set-Cookie", authResult.b.toString()).body(authResult.a);
+    public ResponseEntity<AccessTokenDTO> login(@Validated @RequestBody LoginRequestDTO loginRequestDto){
+        Pair<AccessTokenDTO , ResponseCookie> authResult = authService.authenticateClient(loginRequestDto);
+        return ResponseEntity.ok().header("Set-Cookie", authResult.b.toString())
+                .header("Access-Control-Allow-Credentials",Boolean.toString(true))
+                .body(authResult.a);
     }
 
     // this is used only to sign up a SUPER_RH and the company for the first time.
     // the SUPER_RH can create other accounts later in other routes.
     @PostMapping("/signup")
-    public ResponseEntity<AccessTokenDTO> signUp(@Validated @RequestBody SignUpDTO signUpDto ){
-        Pair<AccessTokenDTO , ResponseCookie> authResult = authService.registerClient(signUpDto);
-        return ResponseEntity.ok().header("Set-Cookie", authResult.b.toString()).body(authResult.a);
+    public ResponseEntity<AccessTokenDTO> signUp(@Validated @RequestBody SignUpRequestDTO signUpRequestDto){
+        Pair<AccessTokenDTO , ResponseCookie> authResult = authService.registerClient(signUpRequestDto);
+        return ResponseEntity.ok().header("Set-Cookie", authResult.b.toString())
+                .header("Access-Control-Allow-Credentials",Boolean.toString(true))
+                .body(authResult.a);
     }
 
 

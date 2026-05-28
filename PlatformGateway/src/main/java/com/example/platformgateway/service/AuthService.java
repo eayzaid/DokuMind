@@ -1,8 +1,8 @@
 package com.example.platformgateway.service;
 import com.example.platformgateway.exception.BadCredentialsException;
 import com.example.platformgateway.model.dto.AccessTokenDTO;
-import com.example.platformgateway.model.dto.LoginDTO;
-import com.example.platformgateway.model.dto.SignUpDTO;
+import com.example.platformgateway.model.dto.LoginRequestDTO;
+import com.example.platformgateway.model.dto.SignUpRequestDTO;
 import com.example.platformgateway.model.entity.Company;
 import com.example.platformgateway.model.entity.User;
 import com.example.platformgateway.model.enums.Role;
@@ -33,29 +33,29 @@ public class AuthService {
         this.jwtProvider = jwtProvider;
     }
 
-    public Pair<AccessTokenDTO , ResponseCookie> authenticateClient(LoginDTO loginDTO) throws BadCredentialsException{
-        return Optional.ofNullable(userRepository.getUserByEmail(loginDTO.email()))
-                .filter(user -> BcryptUtility.isPasswordValid(loginDTO.password(), user.getPassword()))
+    public Pair<AccessTokenDTO , ResponseCookie> authenticateClient(LoginRequestDTO loginRequestDTO) throws BadCredentialsException{
+        return Optional.ofNullable(userRepository.getUserByEmail(loginRequestDTO.email()))
+                .filter(user -> BcryptUtility.isPasswordValid(loginRequestDTO.password(), user.getPassword()))
                 .map(this::buildAuthTokens)
                 .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
     }
 
     @Transactional
-    public Pair<AccessTokenDTO , ResponseCookie> registerClient(SignUpDTO signupDTO) throws BadCredentialsException{
+    public Pair<AccessTokenDTO , ResponseCookie> registerClient(SignUpRequestDTO signupRequestDTO) throws BadCredentialsException{
 
-        if (userRepository.existsByEmail(signupDTO.email())) {
-            throw new BadCredentialsException("Email already in use: " + signupDTO.email());
+        if (userRepository.existsByEmail(signupRequestDTO.email())) {
+            throw new BadCredentialsException("Email already in use: " + signupRequestDTO.email());
         }
 
         Company company = Company.builder()
-                .name(signupDTO.companyName())
-                .address(signupDTO.companyAddress())
+                .name(signupRequestDTO.companyName())
+                .address(signupRequestDTO.companyAddress())
                 .build();
 
-        User newUser = User.builder().firstName(signupDTO.firstName())
-                .lastName(signupDTO.lastName())
-                .email(signupDTO.email())
-                .password(BcryptUtility.hashPassword(signupDTO.password()))
+        User newUser = User.builder().firstName(signupRequestDTO.firstName())
+                .lastName(signupRequestDTO.lastName())
+                .email(signupRequestDTO.email())
+                .password(BcryptUtility.hashPassword(signupRequestDTO.password()))
                 .role(Role.SUPER_RH)
                 .build();
 
@@ -75,7 +75,6 @@ public class AuthService {
     private Pair<AccessTokenDTO, ResponseCookie> buildAuthTokens(User user) {
         ResponseCookie refreshToken = ResponseCookie.from("refresh_token", jwtProvider.getRefreshToken(user))
                 .httpOnly(true)
-                .secure(true)
                 .sameSite("Strict")
                 .path("/auth/refresh") // it's only used for refreshing the access token ONLY
                 .maxAge(7 * 24 * 3600) // 7 days
