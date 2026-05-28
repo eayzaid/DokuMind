@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
+import { useAuth } from '../../context/AuthProvider'
 import { loginUser } from './login/fetching'
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -57,6 +58,8 @@ function SecureWorkspaceWindow() {
 }
 
 function Login() {
+  const navigate = useNavigate()
+  const { setAuth } = useAuth()
   const [formValues, setFormValues] = useState<LoginFields>({
     email: '',
     password: '',
@@ -88,7 +91,9 @@ function Login() {
 
     setErrors({})
     try {
-      await loginUser(result.data)
+      const authData = await loginUser(result.data)
+      setAuth(authData)
+      navigate('/role')
     } catch {
       return
     }

@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
+import { useAuth } from '../../context/AuthProvider'
 import { signUpUser } from './signup/fetching'
 
 const signupSchema = z.object({
@@ -50,6 +51,8 @@ function AssistantWindow() {
 }
 
 function Signup() {
+  const navigate = useNavigate()
+  const { setAuth } = useAuth()
   const [formValues, setFormValues] = useState<SignupFields>({
     firstName: '',
     lastName: '',
@@ -117,7 +120,7 @@ function Signup() {
 
     setErrors({})
     try {
-      await signUpUser({
+      const authData = await signUpUser({
         first_name: result.data.firstName,
         last_name: result.data.lastName,
         company_name: result.data.companyName,
@@ -125,6 +128,8 @@ function Signup() {
         email: result.data.email,
         password: result.data.password,
       })
+      setAuth(authData)
+      navigate('/role')
     } catch {
       return
     }

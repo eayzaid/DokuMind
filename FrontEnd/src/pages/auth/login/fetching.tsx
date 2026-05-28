@@ -1,8 +1,5 @@
-import axios from 'axios'
-
-const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-})
+import { apiClient } from '../../../services/apiClient'
+import type { AuthResponse } from '../../../types/auth'
 
 export type LoginPayload = {
   email: string
@@ -10,8 +7,6 @@ export type LoginPayload = {
 }
 
 export const loginUser = async (payload: LoginPayload) => {
-  const response = await apiClient.post('/auth/login', payload , {
-    withCredentials : true
-  })
+  const response = await apiClient.post<AuthResponse>('/auth/login', payload)
   return response.data
 }
