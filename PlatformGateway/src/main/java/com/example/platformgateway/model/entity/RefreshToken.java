@@ -17,6 +17,6 @@ public class RefreshToken {
     User client;
 
     @Id
-    @Lob
+    @Column(columnDefinition = "text", nullable = false)
     String token;
 }
