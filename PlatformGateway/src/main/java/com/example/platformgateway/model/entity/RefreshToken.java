@@ -17,5 +17,6 @@ public class RefreshToken {
     User client;
 
     @Id
+    @Lob
     String token;
 }
