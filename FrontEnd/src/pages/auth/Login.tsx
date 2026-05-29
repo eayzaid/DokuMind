@@ -59,7 +59,7 @@ function SecureWorkspaceWindow() {
 
 function Login() {
   const navigate = useNavigate()
-  const { setAuth } = useAuth()
+  const { getRolePath, setAuth } = useAuth()
   const [formValues, setFormValues] = useState<LoginFields>({
     email: '',
     password: '',
@@ -93,7 +93,7 @@ function Login() {
     try {
       const authData = await loginUser(result.data)
       setAuth(authData)
-      navigate('/role')
+      navigate(getRolePath(authData.role), { replace: true })
     } catch {
       return
     }
