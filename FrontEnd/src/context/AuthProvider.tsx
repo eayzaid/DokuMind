@@ -3,13 +3,14 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import type { AxiosError, AxiosRequestConfig } from 'axios'
-import {AxiosHeaders} from 'axios'
+import { AxiosHeaders } from 'axios'
 import { apiClient, refreshClient } from '../services/apiClient'
 import type { AuthResponse } from '../types/auth'
 
@@ -38,8 +39,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     accessToken: null,
     role: null,
   })
+  const [isAuthReady, setIsAuthReady] = useState(false)
+  const [interceptorsReady, setInterceptorsReady] = useState(false)
   const accessTokenRef = useRef<string | null>(null)
   const didInitRefresh = useRef(false)
+  const refreshPromiseRef = useRef<Promise<AuthResponse> | null>(null)
 
   const getRolePath = useCallback((role: string | null) => {
     switch (role) {
@@ -75,37 +79,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const setAuth = useCallback((payload: AuthResponse) => {
     accessTokenRef.current = payload.accessToken
     setAuthState({ accessToken: payload.accessToken, role: payload.role })
+    setIsAuthReady(true)
   }, [])
 
   const clearAuth = useCallback(() => {
     accessTokenRef.current = null
     setAuthState({ accessToken: null, role: null })
+    setIsAuthReady(true)
   }, [])
+
+  const runRefresh = useCallback(async () => {
+    if (refreshPromiseRef.current) {
+      return refreshPromiseRef.current
+    }
+
+    didInitRefresh.current = true
+
+    const refreshPromise = refreshClient
+      .get<AuthResponse>('/auth/refresh')
+      .then((refreshResponse) => {
+        setAuth(refreshResponse.data)
+        handleRoleRedirect(refreshResponse.data.role)
+        return refreshResponse.data
+      })
+      .catch((error) => {
+        clearAuth()
+        navigate('/auth/login', { replace: true })
+        throw error
+      })
+      .finally(() => {
+        refreshPromiseRef.current = null
+      })
+
+    refreshPromiseRef.current = refreshPromise
+    return refreshPromise
+  }, [clearAuth, handleRoleRedirect, navigate, setAuth])
 
   useEffect(() => {
     if (didInitRefresh.current || accessTokenRef.current) {
       return
     }
 
-    didInitRefresh.current = true
+    runRefresh()
+  }, [runRefresh])
 
-    const refreshSession = async () => {
-      try {
-        const refreshResponse = await refreshClient.get<AuthResponse>(
-          '/auth/refresh',
-        )
-        setAuth(refreshResponse.data)
-        handleRoleRedirect(refreshResponse.data.role)
-      } catch {
-        clearAuth()
-        navigate('/auth/login', { replace: true })
-      }
-    }
-
-    refreshSession()
-  }, [clearAuth, handleRoleRedirect, navigate, setAuth])
-
-  useEffect(() => {
+  useLayoutEffect(() => {
     let isRefreshing = false
     let requestQueue: PendingRequest[] = []
 
@@ -128,15 +146,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       requestQueue = []
     }
 
-    const requestInterceptor = apiClient.interceptors.request.use((config) => {
-      const token = authState.accessToken
-      if (token) {
-        const headers = AxiosHeaders.from(config.headers)
-        headers.set("Authorization", `Bearer ${token}`)
-        config.headers = headers
-      }
-      return config
-    })
+    const requestInterceptor = apiClient.interceptors.request.use(
+      async (config) => {
+        const requestUrl = config.url ?? ''
+        const isAuthRequest = requestUrl.startsWith('/auth/')
+
+        if (!isAuthRequest && !accessTokenRef.current) {
+          try {
+            if (!didInitRefresh.current) {
+              await runRefresh()
+            } else if (refreshPromiseRef.current) {
+              await refreshPromiseRef.current
+            }
+          } catch (error) {
+            return Promise.reject(error)
+          }
+        }
+
+        const token = accessTokenRef.current
+        if (!isAuthRequest && !token) {
+          return Promise.reject(new Error('Missing access token.'))
+        }
+
+        if (token) {
+          const headers = AxiosHeaders.from(config.headers)
+          headers.set('Authorization', `Bearer ${token}`)
+          config.headers = headers
+        }
+
+        return config
+      },
+    )
 
     const responseInterceptor = apiClient.interceptors.response.use(
       (response) => response,
@@ -163,12 +203,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isRefreshing = true
 
         try {
-          const refreshResponse = await refreshClient.get<AuthResponse>(
-            '/auth/refresh',
-          )
-          const refreshData = refreshResponse.data
-          setAuth(refreshData)
-          handleRoleRedirect(refreshData.role)
+          const refreshData = await runRefresh()
           processQueue(null, refreshData.accessToken)
           originalRequest.headers = {
             ...originalRequest.headers,
@@ -177,8 +212,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return apiClient(originalRequest)
         } catch (refreshError) {
           processQueue(refreshError, null)
-          clearAuth()
-          navigate('/auth/login', { replace: true })
           return Promise.reject(refreshError)
         } finally {
           isRefreshing = false
@@ -186,11 +219,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
     )
 
+    setInterceptorsReady(true)
+
     return () => {
       apiClient.interceptors.request.eject(requestInterceptor)
       apiClient.interceptors.response.eject(responseInterceptor)
+      setInterceptorsReady(false)
     }
-  }, [clearAuth, handleRoleRedirect, navigate, setAuth])
+  }, [clearAuth, handleRoleRedirect, navigate, runRefresh, setAuth])
 
   const value = useMemo(
     () => ({
@@ -202,6 +238,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }),
     [authState.accessToken, authState.role, clearAuth, getRolePath, setAuth],
   )
+
+  if (!isAuthReady || !interceptorsReady) {
+    return (
+      <div className="flex min-h-svh items-center justify-center bg-background text-foreground">
+        <div className="rounded-full border border-border bg-card px-4 py-2 text-xs text-muted-foreground">
+          Loading session...
+        </div>
+      </div>
+    )
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
