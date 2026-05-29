@@ -1,10 +1,13 @@
 package com.example.platformgateway.provider;
 import com.example.platformgateway.exception.TokenValidityException;
+import com.example.platformgateway.model.dto.JwtPayloadDTO;
 import com.example.platformgateway.model.entity.RefreshToken;
 import com.example.platformgateway.model.entity.User;
+import com.example.platformgateway.model.enums.Role;
 import com.example.platformgateway.repository.RefreshTokenRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.antlr.v4.runtime.Token;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.util.Date;
+import java.util.UUID;
 
 @Service
 public class JwtProvider {
@@ -74,6 +78,24 @@ public class JwtProvider {
                     .build()
                     .parseSignedClaims(refreshToken)
                     .getPayload();
+        }catch (ExpiredJwtException e){
+            throw new TokenValidityException("Token has expired");
+        }catch (JwtException e){
+            throw new TokenValidityException("Token is invalid");
+        }
+    }
+
+    public JwtPayloadDTO decodeToken(String token) throws TokenValidityException{
+        try {
+            Claims decodedTokenClaims = Jwts.parser()
+                    .verifyWith(getSecret(accessTokenSecret))
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            return new JwtPayloadDTO(
+                    UUID.fromString(decodedTokenClaims.getSubject()),
+                    Role.valueOf(decodedTokenClaims.get("role", String.class)),
+                    UUID.fromString(decodedTokenClaims.get("companyId", String.class)));
         }catch (ExpiredJwtException e){
             throw new TokenValidityException("Token has expired");
         }catch (JwtException e){
