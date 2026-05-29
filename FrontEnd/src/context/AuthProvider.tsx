@@ -26,6 +26,7 @@ type PendingRequest = {
 type AuthContextValue = AuthState & {
   setAuth: (payload: AuthResponse) => void
   clearAuth: () => void
+  getRolePath: (role: string | null) => string
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -197,8 +198,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       role: authState.role,
       setAuth,
       clearAuth,
+      getRolePath,
     }),
-    [authState.accessToken, authState.role, clearAuth, setAuth],
+    [authState.accessToken, authState.role, clearAuth, getRolePath, setAuth],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

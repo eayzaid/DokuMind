@@ -52,7 +52,7 @@ function AssistantWindow() {
 
 function Signup() {
   const navigate = useNavigate()
-  const { setAuth } = useAuth()
+  const { getRolePath, setAuth } = useAuth()
   const [formValues, setFormValues] = useState<SignupFields>({
     firstName: '',
     lastName: '',
@@ -129,7 +129,7 @@ function Signup() {
         password: result.data.password,
       })
       setAuth(authData)
-      navigate('/role')
+      navigate(getRolePath(authData.role), { replace: true })
     } catch {
       return
     }

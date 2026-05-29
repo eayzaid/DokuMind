@@ -1,6 +1,9 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import Login from './pages/auth/Login'
 import Signup from './pages/auth/Signup'
+import AdminLayout from './pages/admin/AdminLayout'
+import SuperRHAdmin from './pages/admin/SuperRHAdmin'
+import UserManagement from './pages/admin/UserManagement'
 import RoleMock from './pages/RoleMock'
 
 function App() {
@@ -9,7 +12,10 @@ function App() {
       <Route path="/" element={<Navigate to="/auth/login" replace />} />
       <Route path="/auth/login" element={<Login />} />
       <Route path="/auth/signup" element={<Signup />} />
-      <Route path="/admin" element={<RoleMock />} />
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<SuperRHAdmin />} />
+        <Route path="users" element={<UserManagement />} />
+      </Route>
       <Route path="/rh" element={<RoleMock />} />
       <Route path="/assistant" element={<RoleMock />} />
       <Route path="/worker" element={<RoleMock />} />

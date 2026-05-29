@@ -1,0 +1,161 @@
+import { Link, Outlet, useLocation } from 'react-router-dom'
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarSeparator,
+} from '@/components/ui/sidebar'
+import { FileText, LayoutDashboard, ShieldCheck, Users } from 'lucide-react'
+
+const navigationItems = [
+  {
+    title: 'Dashboard',
+    icon: LayoutDashboard,
+    to: '/admin',
+  },
+  {
+    title: 'User management',
+    icon: Users,
+    to: '/admin/users',
+  },
+  {
+    title: 'Document management',
+    icon: FileText,
+    isDisabled: true,
+  },
+]
+
+const headerCopy = {
+  dashboard: {
+    title: 'SuperRH dashboard',
+    subtitle: 'Mockup workspace overview',
+  },
+  users: {
+    title: 'User management',
+    subtitle: 'Manage access, roles, and workforce records',
+  },
+  documents: {
+    title: 'Document management',
+    subtitle: 'Knowledge files and ingestion controls',
+  },
+}
+
+function getHeaderForPath(pathname: string) {
+  if (pathname.startsWith('/admin/users')) {
+    return headerCopy.users
+  }
+  if (pathname.startsWith('/admin/documents')) {
+    return headerCopy.documents
+  }
+  return headerCopy.dashboard
+}
+
+function AdminLayout() {
+  const location = useLocation()
+  const header = getHeaderForPath(location.pathname)
+
+  return (
+    <SidebarProvider className="min-h-svh bg-background text-foreground">
+      <Sidebar
+        variant="sidebar"
+        collapsible="none"
+        className="sticky top-0 h-svh shrink-0 border-r border-sidebar-border"
+      >
+        <SidebarHeader className="px-4 pb-3 pt-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+              SR
+            </div>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold">SuperRH</span>
+              <span className="text-xs text-sidebar-foreground opacity-70">
+                Admin workspace
+              </span>
+            </div>
+          </div>
+        </SidebarHeader>
+        <SidebarSeparator />
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {navigationItems.map((item) => {
+                  const isActive = item.to
+                    ? item.to === '/admin'
+                      ? location.pathname === item.to
+                      : location.pathname.startsWith(item.to)
+                    : false
+
+                  if (!item.to) {
+                    return (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton
+                          isActive={isActive}
+                          tooltip={item.title}
+                          disabled={item.isDisabled}
+                        >
+                          <item.icon />
+                          <span>{item.title}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    )
+                  }
+
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive}
+                        tooltip={item.title}
+                      >
+                        <Link to={item.to}>
+                          <item.icon />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+        <SidebarFooter className="px-4 pb-4">
+          <div className="flex items-center gap-2 rounded-full border border-sidebar-border bg-sidebar-accent px-3 py-2 text-xs text-sidebar-accent-foreground">
+            <ShieldCheck />
+            <span>Role: SuperRH</span>
+          </div>
+        </SidebarFooter>
+      </Sidebar>
+      <SidebarInset className="min-h-svh bg-background">
+        <header className="flex min-h-16 items-center justify-between border-b px-6">
+          <div className="flex flex-col">
+            <span className="text-sm font-semibold">{header.title}</span>
+            <span className="text-xs text-muted-foreground">
+              {header.subtitle}
+            </span>
+          </div>
+          <div className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground">
+            <span className="size-2 rounded-full bg-doku-rose" />
+            Mock environment
+          </div>
+        </header>
+        <div className="flex flex-1 flex-col px-6 py-6">
+          <Outlet />
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
+  )
+}
+
+export default AdminLayout
