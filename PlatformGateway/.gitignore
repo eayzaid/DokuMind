@@ -4,6 +4,8 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 src/main/resources/data.sql
+# Local-only configuration (use application.properties.example as a template)
+src/main/resources/application.properties
 
 ### STS ###
 .apt_generated
