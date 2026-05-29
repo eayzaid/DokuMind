@@ -24,11 +24,8 @@ public class UserService {
   public UserSummaryResponseDTO getAllUsers(int page, String firstName, String lastName, Role role){
     int sizeOfPage = 10;
     Pageable pageRequested = PageRequest.of(page, sizeOfPage);
-    Page<User> userPage = userRepository.findAll(pageRequested);
-    List<UserSummaryDTO> users =  userPage.stream()
-            .filter(user -> firstName == null || user.getFirstName().toLowerCase().contains(firstName.toLowerCase()))
-            .filter(user -> lastName == null || user.getLastName().toLowerCase().contains(lastName.toLowerCase()))
-            .filter(user -> role == null || user.getRole().name().equals(role.name()))
+    Page<User> userPage = userRepository.findFiltered(firstName, lastName, role, pageRequested);
+    List<UserSummaryDTO> users = userPage.stream()
             .map(user -> new UserSummaryDTO(
                     user.getId(),
                     user.getFirstName(),

@@ -11,4 +11,19 @@ public interface UserRepository extends JpaRepository<User , UUID> {
     public User getUserByEmail(String email);
     public Boolean existsByEmail (String email);
     Page<User> findAll (Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Query(
+            """
+            select u from client u
+            where (lower(u.firstName) like lower(concat('%', :firstName, '%')) or :firstName is null )
+              and (lower(u.lastName) like lower(concat('%', :lastName, '%')) or :lastName is null)
+              and (:role is null or u.role = :role)
+            """
+    )
+    Page<User> findFiltered(
+            @org.springframework.data.repository.query.Param("firstName") String firstName,
+            @org.springframework.data.repository.query.Param("lastName") String lastName,
+            @org.springframework.data.repository.query.Param("role") com.example.platformgateway.model.enums.Role role,
+            Pageable pageable
+    );
 }
