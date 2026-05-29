@@ -1,13 +1,12 @@
 package com.example.platformgateway.controller;
 
+import com.example.platformgateway.model.dto.CreateUserRequestDTO;
+import com.example.platformgateway.model.dto.CreateUserResponseDTO;
 import com.example.platformgateway.model.dto.UserSummaryResponseDTO;
 import com.example.platformgateway.model.enums.Role;
 import com.example.platformgateway.service.UserService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -29,6 +28,11 @@ public class UserController {
           @RequestParam(name = "role", required = false) Role role
   ){
     return ResponseEntity.ok(userService.getAllUsers(page,firstName,lastName,role));
+  }
+
+  @PostMapping
+  public ResponseEntity<CreateUserResponseDTO> createUser(@RequestBody CreateUserRequestDTO createUserRequestDTO){
+    return ResponseEntity.status(201).body(userService.createUser(createUserRequestDTO));
   }
 
 }
