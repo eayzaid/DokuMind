@@ -17,6 +17,7 @@ public interface UserRepository extends JpaRepository<User , UUID> {
             select u from client u
             where (lower(u.firstName) like lower(concat('%', :firstName, '%')) or :firstName is null )
               and (lower(u.lastName) like lower(concat('%', :lastName, '%')) or :lastName is null)
+              and (:companyId = u.company.id)
               and (:role is null or u.role = :role)
             """
     )
@@ -24,6 +25,7 @@ public interface UserRepository extends JpaRepository<User , UUID> {
             @org.springframework.data.repository.query.Param("firstName") String firstName,
             @org.springframework.data.repository.query.Param("lastName") String lastName,
             @org.springframework.data.repository.query.Param("role") com.example.platformgateway.model.enums.Role role,
+            @org.springframework.data.repository.query.Param("companyId") UUID companyId,
             Pageable pageable
     );
 }
