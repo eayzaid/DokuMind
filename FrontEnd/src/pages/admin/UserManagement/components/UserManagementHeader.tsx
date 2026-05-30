@@ -27,7 +27,7 @@ function UserManagementHeader({ totalUsersLabel, children }: UserManagementHeade
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex shrink-0 flex-col items-end gap-2">
           {children}
           <div className="rounded-full border border-border bg-background px-3 py-1 text-xs text-muted-foreground">
             Total users: {totalUsersLabel}

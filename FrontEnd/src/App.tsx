@@ -5,6 +5,8 @@ import Signup from './pages/auth/Signup'
 import AdminLayout from './pages/admin/AdminLayout'
 import SuperRHAdmin from './pages/admin/SuperRHAdmin'
 import UserManagement from './pages/admin/UserManagement'
+import RHLayout from './pages/rh/RHLayout'
+import RHUserManagement from './pages/rh/UserManagement'
 import RoleMock from './pages/RoleMock'
 
 function App() {
@@ -18,7 +20,10 @@ function App() {
           <Route index element={<SuperRHAdmin />} />
           <Route path="users" element={<UserManagement />} />
         </Route>
-        <Route path="/rh" element={<RoleMock />} />
+        <Route path="/rh" element={<RHLayout />}>
+          <Route index element={<Navigate to="/rh/users" replace />} />
+          <Route path="users" element={<RHUserManagement />} />
+        </Route>
         <Route path="/assistant" element={<RoleMock />} />
         <Route path="/worker" element={<RoleMock />} />
         <Route path="/role" element={<RoleMock />} />

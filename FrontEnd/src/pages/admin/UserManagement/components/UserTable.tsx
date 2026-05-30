@@ -10,6 +10,11 @@ interface UserTableProps {
   error: string | null
   /** Called after a user is deleted so the parent can refresh the list. */
   onDelete: () => void
+  /**
+   * Role options passed to the detail dialog's edit form.
+   * Defaults to all roles; pass a restricted list for limited-privilege users.
+   */
+  roleOptions?: Array<{ value: string; label: string }>
 }
 
 /** Full-width row used for loading / empty states. */
@@ -33,7 +38,7 @@ function PlaceholderRow({ message }: { message: string }) {
  * display states (loading, empty/error, data) in one place.
  * Clicking a row opens `UserDetailDialog` to show full user details.
  */
-function UserTable({ users, isLoading, error, onDelete }: UserTableProps) {
+function UserTable({ users, isLoading, error, onDelete, roleOptions }: UserTableProps) {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
 
   return (
@@ -72,6 +77,7 @@ function UserTable({ users, isLoading, error, onDelete }: UserTableProps) {
         userId={selectedUserId}
         onClose={() => setSelectedUserId(null)}
         onDelete={onDelete}
+        roleOptions={roleOptions}
       />
     </>
   )

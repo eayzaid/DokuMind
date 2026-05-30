@@ -28,6 +28,12 @@ interface UserDetailDialogProps {
   onClose: () => void
   /** Called after a successful deletion so the parent can refresh the list. */
   onDelete: () => void
+  /**
+   * Role options shown in the Role select when editing.
+   * Defaults to all creatable roles (RH, Assistant, Worker).
+   * Pass a restricted subset (e.g. only Assistant + Worker) for RH users.
+   */
+  roleOptions?: Array<{ value: string; label: string }>
 }
 
 /** Editable form state mirroring the user detail fields. */
@@ -80,7 +86,7 @@ function EditField({
  *   On success it fires a toast, closes the dialog, and calls `onDelete` so
  *   the parent list refreshes.
  */
-function UserDetailDialog({ userId, onClose, onDelete }: UserDetailDialogProps) {
+function UserDetailDialog({ userId, onClose, onDelete, roleOptions = CREATE_USER_ROLE_OPTIONS }: UserDetailDialogProps) {
   const [user, setUser] = useState<UserDetail | null>(null)
   const [form, setForm] = useState<EditState | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -277,7 +283,7 @@ function UserDetailDialog({ userId, onClose, onDelete }: UserDetailDialogProps) 
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    {CREATE_USER_ROLE_OPTIONS.map((opt) => (
+                    {roleOptions.map((opt) => (
                       <SelectItem key={opt.value} value={opt.value}>
                         {opt.label}
                       </SelectItem>

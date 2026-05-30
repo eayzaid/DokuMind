@@ -22,7 +22,7 @@ function UserTableRow({ user, onClick }: UserTableRowProps) {
       <td className="px-6 py-4 font-medium">{user.firstName}</td>
       <td className="px-6 py-4 font-medium">{user.lastName}</td>
       <td className="px-6 py-4">
-        <span className="rounded-full border border-border bg-background px-3 py-1 text-xs">
+        <span className="inline-flex items-center whitespace-nowrap rounded-full border border-border bg-background px-3 py-1 text-xs">
           {ROLE_LABELS[user.role] ?? user.role}
         </span>
       </td>
