@@ -1,4 +1,5 @@
-import { Link, Outlet, useLocation } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   Sidebar,
   SidebarContent,
@@ -14,7 +15,8 @@ import {
   SidebarProvider,
   SidebarSeparator,
 } from '@/components/ui/sidebar'
-import { FileText, LayoutDashboard, ShieldCheck, Users } from 'lucide-react'
+import { FileText, LayoutDashboard, LogOut, ShieldCheck, Users } from 'lucide-react'
+import { apiClient } from '@/services/apiClient'
 
 const navigationItems = [
   {
@@ -61,7 +63,20 @@ function getHeaderForPath(pathname: string) {
 
 function AdminLayout() {
   const location = useLocation()
+  const navigate = useNavigate()
   const header = getHeaderForPath(location.pathname)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true)
+    try {
+      await apiClient.post('/auth/logout')
+    } finally {
+      // Navigate to login regardless of outcome — the session is gone
+      // on the server side and the cookie is cleared.
+      navigate('/auth/login')
+    }
+  }
 
   return (
     <SidebarProvider className="min-h-svh bg-background text-foreground">
@@ -135,6 +150,19 @@ function AdminLayout() {
             <ShieldCheck />
             <span>Role: SuperRH</span>
           </div>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                tooltip="Log out"
+                className="text-sidebar-foreground/70 hover:text-sidebar-foreground"
+              >
+                <LogOut />
+                <span>{isLoggingOut ? 'Logging out…' : 'Log out'}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
         </SidebarFooter>
       </Sidebar>
       <SidebarInset className="min-h-svh bg-background">
