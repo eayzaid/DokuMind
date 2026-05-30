@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 
-public record CreateUserRequestDTO(
+public record CreatePatchUserRequestDTO(
         @NotBlank(message = "First name is required")
         String firstName ,
         @NotBlank(message = "Last name is required")
