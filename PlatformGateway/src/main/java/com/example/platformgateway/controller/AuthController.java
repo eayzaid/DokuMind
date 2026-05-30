@@ -45,4 +45,12 @@ public class AuthController {
         AccessTokenDTO accessToken  = authService.refreshAccessToken(refreshToken);
         return ResponseEntity.ok().body(accessToken);
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<AccessTokenDTO> logout(){
+        ResponseCookie logoutCookie = authService.logoutUser();
+        return ResponseEntity.ok().header("Set-Cookie", logoutCookie.toString())
+                .header("Access-Control-Allow-Credentials",Boolean.toString(true))
+                .build();
+    }
 }

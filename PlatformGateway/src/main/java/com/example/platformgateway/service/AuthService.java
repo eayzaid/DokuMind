@@ -78,6 +78,15 @@ public class AuthService {
         return new AccessTokenDTO(jwtProvider.getAccessToken(user), user.getRole());
     }
 
+    public ResponseCookie logoutUser(){
+        return ResponseCookie.from("refresh_token", "")
+                .httpOnly(true)
+                .sameSite("Strict")
+                .path("/auth/refresh") // it's only used for refreshing the access token ONLY
+                .maxAge(0)
+                .build();
+    }
+
     private Pair<AccessTokenDTO, ResponseCookie> buildAuthTokens(User user) {
         ResponseCookie refreshToken = ResponseCookie.from("refresh_token", jwtProvider.getRefreshToken(user))
                 .httpOnly(true)

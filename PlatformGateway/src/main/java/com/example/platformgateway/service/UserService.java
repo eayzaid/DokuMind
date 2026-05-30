@@ -2,12 +2,14 @@ package com.example.platformgateway.service;
 
 import com.example.platformgateway.exception.BadRequestException;
 import com.example.platformgateway.exception.NonAuthenticatedAccessException;
+import com.example.platformgateway.exception.RuntimeMessagingException;
 import com.example.platformgateway.model.dto.*;
 import com.example.platformgateway.model.entity.User;
 import com.example.platformgateway.model.enums.Role;
 import com.example.platformgateway.repository.CompanyRepository;
 import com.example.platformgateway.repository.UserRepository;
 import com.example.platformgateway.utils.BcryptUtility;
+import jakarta.mail.MessagingException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -52,7 +54,7 @@ public class UserService {
   }
 
   @Transactional
-  public CreateUserResponseDTO createUser(CreateUserRequestDTO createUserRequestDTO){
+  public CreateUserResponseDTO createUser(CreateUserRequestDTO createUserRequestDTO) throws RuntimeMessagingException {
     String userPassword = BcryptUtility.generateRandomPassword();
     JwtPayloadDTO authContext = Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
             .map(Authentication::getPrincipal)
@@ -70,7 +72,11 @@ public class UserService {
             .company(companyRepository.findById(authContext.companyId()).orElseThrow(() -> new BadRequestException("Company not found")))
             .build();
     User savedUser = userRepository.save(newUser);
-    emailService.sendEmail(emailService.buildEmailDetails(savedUser.getEmail(), userPassword, true));
+    try{
+      emailService.sendEmail(emailService.buildEmailDetails(savedUser.getEmail(), userPassword, true));
+    }catch(MessagingException e){
+      throw new RuntimeMessagingException("Failed to send email to the new user");
+    }
     return new CreateUserResponseDTO(savedUser.getId());
   }
 }

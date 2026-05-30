@@ -2,6 +2,7 @@ package com.example.platformgateway.advice;
 
 import com.example.platformgateway.exception.BadRequestException;
 import com.example.platformgateway.exception.NonAuthenticatedAccessException;
+import com.example.platformgateway.exception.RuntimeMessagingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
@@ -32,5 +33,12 @@ public class GlobalAdviceController {
     public ResponseEntity<ProblemDetail> badRequest (BadRequestException e){
         return new ResponseEntity<>( ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,e.getMessage()),HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(RuntimeMessagingException.class)
+    public ResponseEntity<ProblemDetail> messagingException (RuntimeMessagingException e){
+        return new ResponseEntity<>( ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE,e.getMessage()),HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+
 
 }
