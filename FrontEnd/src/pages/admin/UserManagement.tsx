@@ -38,7 +38,7 @@ function UserManagement() {
 
       <section className="rounded-xl border bg-card shadow-card">
         <UserFilterBar onApply={applyFilters} onReset={resetFilters} />
-        <UserTable users={users} isLoading={isLoading} error={error} />
+        <UserTable users={users} isLoading={isLoading} error={error} onDelete={refresh} />
         <UserPagination
           currentPage={currentPage}
           totalPages={totalPages}

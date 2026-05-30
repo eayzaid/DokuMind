@@ -67,3 +67,13 @@ export async function fetchUserById(userId: string): Promise<UserDetail> {
 export async function resetUserPassword(userId: string): Promise<void> {
   await apiClient.post(`/users/${userId}/reset`)
 }
+
+/**
+ * Permanently deletes a user.
+ *
+ * Pure async function — no React hooks, no state.
+ * Throws on failure so the caller can display an appropriate error toast.
+ */
+export async function deleteUser(userId: string): Promise<void> {
+  await apiClient.delete(`/users/${userId}`)
+}
