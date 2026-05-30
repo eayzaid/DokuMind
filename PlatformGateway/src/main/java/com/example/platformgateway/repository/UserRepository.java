@@ -32,5 +32,5 @@ public interface UserRepository extends JpaRepository<User , UUID> {
 
     Optional<Object> findByIdAndCompany_Id(UUID id, UUID companyId);
 
-    Optional<Object> deleteByIdAndCompany_Id(UUID id, UUID companyId);
+    void deleteByIdAndCompany_Id(UUID id, UUID companyId);
 }
