@@ -1,8 +1,11 @@
 package com.example.platformgateway.service;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.Getter;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
@@ -56,12 +59,14 @@ public class EmailService {
     );
   }
 
-  public void sendEmail(EmailDetails emailDetails) {
-    SimpleMailMessage message = new SimpleMailMessage();
-    message.setFrom(senderEmail);
-    message.setTo(emailDetails.getRecipient());
-    message.setSubject(emailDetails.getSubject());
-    message.setText(emailDetails.getBody());
+  public void sendEmail(EmailDetails emailDetails) throws MessagingException {
+    MimeMessage message = mailSender.createMimeMessage();
+    MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+    helper.setFrom(senderEmail);
+    helper.setTo(emailDetails.getRecipient());
+    helper.setSubject(emailDetails.getSubject());
+    helper.setText(emailDetails.getBody(), true);
+
     mailSender.send(message);
   }
 
