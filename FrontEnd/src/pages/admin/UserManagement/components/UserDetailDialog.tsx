@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { fetchUserById, resetUserPassword, updateUser } from '../api'
+import { fetchUserById, resetUserPassword, updateUser, deleteUser } from '../api'
 import { CREATE_USER_ROLE_OPTIONS } from '../constants'
 import type { UserDetail, CreateUserValues } from '../types'
 
@@ -26,6 +26,8 @@ interface UserDetailDialogProps {
   /** The ID of the user to display, or null when the dialog is closed. */
   userId: string | null
   onClose: () => void
+  /** Called after a successful deletion so the parent can refresh the list. */
+  onDelete: () => void
 }
 
 /** Editable form state mirroring the user detail fields. */
@@ -71,15 +73,26 @@ function EditField({
 /**
  * Modal that loads and shows the editable details of a single user.
  *
- * Opens whenever `userId` is non-null and closes when the user dismisses it
- * (calls `onClose`) or when `userId` is set back to null by the parent.
+ * Actions available:
+ * - **Update** — saves changed fields via PUT /users/{id}
+ * - **Reset password** — triggers a password reset email via POST /users/{id}/reset
+ * - **Delete** — two-step confirmation guard before calling DELETE /users/{id}.
+ *   On success it fires a toast, closes the dialog, and calls `onDelete` so
+ *   the parent list refreshes.
  */
-function UserDetailDialog({ userId, onClose }: UserDetailDialogProps) {
+function UserDetailDialog({ userId, onClose, onDelete }: UserDetailDialogProps) {
   const [user, setUser] = useState<UserDetail | null>(null)
   const [form, setForm] = useState<EditState | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isResetting, setIsResetting] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  /**
+   * Two-step delete guard.
+   * false  → "Delete" button shows normally
+   * true   → switches to a "Confirm deletion?" warning strip
+   */
+  const [deleteConfirmPending, setDeleteConfirmPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Fetch user data whenever the dialog opens with a new userId
@@ -88,6 +101,7 @@ function UserDetailDialog({ userId, onClose }: UserDetailDialogProps) {
       setUser(null)
       setForm(null)
       setError(null)
+      setDeleteConfirmPending(false)
       return
     }
 
@@ -97,6 +111,7 @@ function UserDetailDialog({ userId, onClose }: UserDetailDialogProps) {
     setError(null)
     setUser(null)
     setForm(null)
+    setDeleteConfirmPending(false)
 
     fetchUserById(userId)
       .then((data) => {
@@ -132,7 +147,7 @@ function UserDetailDialog({ userId, onClose }: UserDetailDialogProps) {
     try {
       await resetUserPassword(user.id)
       toast.success('Password reset successfully', {
-        description: `A new password has been set for ${user.firstName} ${user.lastName}.`,
+        description: `A new password has been sent to ${user.firstName} ${user.lastName}.`,
       })
     } catch {
       toast.error('Failed to reset password', {
@@ -154,7 +169,7 @@ function UserDetailDialog({ userId, onClose }: UserDetailDialogProps) {
         role: form.role as CreateUserValues['role'],
       }
       await updateUser(user.id, payload)
-      toast.success('User updated successfully', {
+      toast.success('User updated', {
         description: `${payload.firstName} ${payload.lastName}'s details have been saved.`,
       })
     } catch {
@@ -165,6 +180,36 @@ function UserDetailDialog({ userId, onClose }: UserDetailDialogProps) {
       setIsUpdating(false)
     }
   }
+
+  const handleDeleteRequest = () => {
+    // First click — show the confirmation strip instead of immediately deleting
+    setDeleteConfirmPending(true)
+  }
+
+  const handleDeleteCancel = () => {
+    setDeleteConfirmPending(false)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!user) return
+    setIsDeleting(true)
+    try {
+      await deleteUser(user.id)
+      toast.success('User deleted', {
+        description: `${user.firstName} ${user.lastName} has been permanently removed.`,
+      })
+      onClose()
+      onDelete()
+    } catch {
+      toast.error('Failed to delete user', {
+        description: 'An error occurred. Please try again.',
+      })
+      setIsDeleting(false)
+      setDeleteConfirmPending(false)
+    }
+  }
+
+  const isBusy = isUpdating || isResetting || isDeleting
 
   return (
     <Dialog open={!!userId} onOpenChange={(open) => !open && onClose()}>
@@ -177,16 +222,12 @@ function UserDetailDialog({ userId, onClose }: UserDetailDialogProps) {
             </DialogDescription>
           )}
           {!user && !isLoading && (
-            <DialogDescription>
-              Loading user information…
-            </DialogDescription>
+            <DialogDescription>Loading user information…</DialogDescription>
           )}
         </DialogHeader>
 
         {isLoading && (
-          <p className="py-4 text-center text-sm text-muted-foreground">
-            Loading…
-          </p>
+          <p className="py-4 text-center text-sm text-muted-foreground">Loading…</p>
         )}
 
         {error && (
@@ -248,27 +289,77 @@ function UserDetailDialog({ userId, onClose }: UserDetailDialogProps) {
           </div>
         )}
 
-        {form && (
-          <DialogFooter className="flex-col gap-2 sm:flex-row">
+        {/* ------------------------------------------------------------------ */}
+        {/* Delete confirmation strip — replaces the footer when pending        */}
+        {/* ------------------------------------------------------------------ */}
+        {deleteConfirmPending && user && (
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-doku-rose/30 bg-doku-rose/5 px-4 py-3">
+            <p className="text-xs text-doku-rose">
+              Permanently delete{' '}
+              <span className="font-semibold">
+                {user.firstName} {user.lastName}
+              </span>
+              ? This cannot be undone.
+            </p>
+            <div className="flex shrink-0 items-center gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={handleDeleteCancel}
+                disabled={isDeleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                className="bg-doku-rose text-white hover:bg-doku-rose/90"
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting}
+              >
+                {isDeleting ? 'Deleting…' : 'Yes, delete'}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {form && !deleteConfirmPending && (
+          <DialogFooter className="flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            {/* Left-side destructive action */}
             <Button
               type="button"
               variant="outline"
               size="sm"
-              className="w-full sm:w-auto"
-              disabled={isResetting}
-              onClick={handleResetPassword}
+              className="w-full border-doku-rose/40 text-doku-rose hover:border-doku-rose hover:bg-doku-rose/5 sm:w-auto"
+              disabled={isBusy}
+              onClick={handleDeleteRequest}
             >
-              {isResetting ? 'Resetting…' : 'Reset password'}
+              Delete user
             </Button>
-            <Button
-              type="button"
-              size="sm"
-              className="w-full sm:w-auto"
-              disabled={isUpdating || isResetting}
-              onClick={handleUpdate}
-            >
-              {isUpdating ? 'Updating…' : 'Update'}
-            </Button>
+
+            {/* Right-side safe actions */}
+            <div className="flex w-full gap-2 sm:w-auto">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="flex-1 sm:flex-none"
+                disabled={isBusy}
+                onClick={handleResetPassword}
+              >
+                {isResetting ? 'Resetting…' : 'Reset password'}
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                className="flex-1 sm:flex-none"
+                disabled={isBusy}
+                onClick={handleUpdate}
+              >
+                {isUpdating ? 'Saving…' : 'Save'}
+              </Button>
+            </div>
           </DialogFooter>
         )}
       </DialogContent>

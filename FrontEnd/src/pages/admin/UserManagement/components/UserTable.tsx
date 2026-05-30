@@ -8,6 +8,8 @@ interface UserTableProps {
   isLoading: boolean
   /** Error message to display when users couldn't be loaded. */
   error: string | null
+  /** Called after a user is deleted so the parent can refresh the list. */
+  onDelete: () => void
 }
 
 /** Full-width row used for loading / empty states. */
@@ -31,7 +33,7 @@ function PlaceholderRow({ message }: { message: string }) {
  * display states (loading, empty/error, data) in one place.
  * Clicking a row opens `UserDetailDialog` to show full user details.
  */
-function UserTable({ users, isLoading, error }: UserTableProps) {
+function UserTable({ users, isLoading, error, onDelete }: UserTableProps) {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
 
   return (
@@ -69,6 +71,7 @@ function UserTable({ users, isLoading, error }: UserTableProps) {
       <UserDetailDialog
         userId={selectedUserId}
         onClose={() => setSelectedUserId(null)}
+        onDelete={onDelete}
       />
     </>
   )
