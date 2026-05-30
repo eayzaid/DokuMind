@@ -149,4 +149,17 @@ public class UserService {
   }
 
 
+  @Transactional
+  public String deleteUser(UUID userId) {
+    JwtPayloadDTO authContext = Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
+            .map(Authentication::getPrincipal)
+            .filter(JwtPayloadDTO.class::isInstance)
+            .map(JwtPayloadDTO.class::cast)
+            .orElseThrow(() -> new NonAuthenticatedAccessException("Access Denied , Non Authenticated"));
+
+    userRepository.deleteByIdAndCompany_Id(userId, authContext.companyId());
+    return "The user with userId: " + userId + " have been deleted successfully";
+  }
+
+
 }

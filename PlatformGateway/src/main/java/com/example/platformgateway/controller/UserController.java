@@ -51,4 +51,9 @@ public class UserController {
     return ResponseEntity.status(201).body(userService.createUser(createUserRequestDTO));
   }
 
+  @DeleteMapping("/{userId}")
+  public ResponseEntity<String> deleteUser(@PathVariable UUID userId ){
+    return ResponseEntity.ok().body(userService.deleteUser(userId));
+  }
+
 }
