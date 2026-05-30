@@ -36,15 +36,23 @@ public class UserService {
     this.emailService = emailService;
   }
 
-  public UserSummaryResponseDTO getAllUsers(int page, String firstName, String lastName, Role role){
-    int sizeOfPage = 10;
-    Pageable pageRequested = PageRequest.of(page, sizeOfPage);
-    JwtPayloadDTO authContext = Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
+  /**
+   * Helper method to extract the JWT payload from the Security Context.
+   */
+  private JwtPayloadDTO getAuthContext() {
+    return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
             .map(Authentication::getPrincipal)
             .filter(JwtPayloadDTO.class::isInstance)
             .map(JwtPayloadDTO.class::cast)
             .orElseThrow(() -> new NonAuthenticatedAccessException("Access Denied , Non Authenticated"));
-    Page<User> userPage = userRepository.findFiltered(firstName, lastName, role , authContext.companyId(), pageRequested);
+  }
+
+  public UserSummaryResponseDTO getAllUsers(int page, String firstName, String lastName, Role role){
+    int sizeOfPage = 10;
+    Pageable pageRequested = PageRequest.of(page, sizeOfPage);
+    JwtPayloadDTO authContext = getAuthContext();
+
+    Page<User> userPage = userRepository.findFiltered(firstName, lastName, role, authContext.companyId(), pageRequested);
     List<UserSummaryDTO> users = userPage.stream()
             .map(user -> new UserSummaryDTO(
                     user.getId(),
@@ -52,19 +60,17 @@ public class UserService {
                     user.getLastName(),
                     user.getRole()
             )).toList();
-    return new UserSummaryResponseDTO( userPage.getTotalElements() , userPage.getTotalPages() , users );
+
+    return new UserSummaryResponseDTO(userPage.getTotalElements(), userPage.getTotalPages(), users);
   }
 
-  public FetchUserResponseDTO getUser( UUID userId ){
+  public FetchUserResponseDTO getUser(UUID userId){
+    // necessary to get the user info from the admin tenant only
+    JwtPayloadDTO authContext = getAuthContext();
 
-    //necessary to get the user info from the admin tenant only
-    JwtPayloadDTO authContext = Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
-            .map(Authentication::getPrincipal)
-            .filter(JwtPayloadDTO.class::isInstance)
-            .map(JwtPayloadDTO.class::cast)
-            .orElseThrow(() -> new NonAuthenticatedAccessException("Access Denied , Non Authenticated"));
+    User user = (User) userRepository.findByIdAndCompany_Id(userId, authContext.companyId())
+            .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId +" in company: " + authContext.companyId()));
 
-    User user = (User) userRepository.findByIdAndCompany_Id(userId,authContext.companyId()).orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId +" in company: " + authContext.companyId()));
     return new FetchUserResponseDTO(
             user.getId(),
             user.getFirstName(),
@@ -74,46 +80,47 @@ public class UserService {
     );
   }
 
-
-
   @Transactional
   public CreateUserResponseDTO createUser(CreatePatchUserRequestDTO createPatchUserRequestDTO) throws RuntimeMessagingException {
-    String userPassword = BcryptUtility.generateRandomPassword();
-    JwtPayloadDTO authContext = Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
-            .map(Authentication::getPrincipal)
-            .filter(JwtPayloadDTO.class::isInstance)
-            .map(JwtPayloadDTO.class::cast)
-            .orElseThrow(() -> new NonAuthenticatedAccessException("Access Denied , Non Authenticated"));
+    JwtPayloadDTO authContext = getAuthContext();
 
-    if(createPatchUserRequestDTO.role().equals(Role.SUPER_RH)) throw new BadRequestException("Cannot create a user with SUPER_RH role");
+    if(createPatchUserRequestDTO.role().equals(Role.SUPER_RH)) {
+      throw new BadRequestException("Cannot create a user with SUPER_RH role");
+    }
+
+    String userPassword = BcryptUtility.generateRandomPassword();
     User newUser = User.builder()
             .firstName(createPatchUserRequestDTO.firstName())
             .lastName(createPatchUserRequestDTO.lastName())
             .email(createPatchUserRequestDTO.email())
             .role(createPatchUserRequestDTO.role())
             .password(BcryptUtility.hashPassword(userPassword))
-            .company(companyRepository.findById(authContext.companyId()).orElseThrow(() -> new BadRequestException("Company not found")))
+            .company(companyRepository.findById(authContext.companyId())
+                    .orElseThrow(() -> new BadRequestException("Company not found")))
             .build();
+
     User savedUser = userRepository.save(newUser);
+
     try{
       emailService.sendEmail(emailService.buildEmailDetails(savedUser.getEmail(), userPassword, true));
     }catch(MessagingException e){
       throw new RuntimeMessagingException("Failed to send email to the new user");
     }
+
     return new CreateUserResponseDTO(savedUser.getId());
   }
 
   @Transactional
-  public String patchUser(CreatePatchUserRequestDTO createPatchUserRequestDTO , UUID userId) throws RuntimeMessagingException {
-    JwtPayloadDTO authContext = Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
-            .map(Authentication::getPrincipal)
-            .filter(JwtPayloadDTO.class::isInstance)
-            .map(JwtPayloadDTO.class::cast)
-            .orElseThrow(() -> new NonAuthenticatedAccessException("Access Denied , Non Authenticated"));
+  public String patchUser(CreatePatchUserRequestDTO createPatchUserRequestDTO, UUID userId) throws RuntimeMessagingException {
+    JwtPayloadDTO authContext = getAuthContext();
 
-    if(createPatchUserRequestDTO.role().equals(Role.SUPER_RH)) throw new BadRequestException("Cannot create a user with SUPER_RH role");
+    if(createPatchUserRequestDTO.role().equals(Role.SUPER_RH)) {
+      throw new BadRequestException("Cannot create a user with SUPER_RH role");
+    }
 
-    User userToPatch = (User) userRepository.findByIdAndCompany_Id(userId, authContext.companyId()).orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId +" in company: " + authContext.companyId()));
+    User userToPatch = (User) userRepository.findByIdAndCompany_Id(userId, authContext.companyId())
+            .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId +" in company: " + authContext.companyId()));
+
     userToPatch.setFirstName(createPatchUserRequestDTO.firstName());
     userToPatch.setLastName(createPatchUserRequestDTO.lastName());
     userToPatch.setEmail(createPatchUserRequestDTO.email());
@@ -125,41 +132,40 @@ public class UserService {
     }catch(MessagingException e){
       throw new RuntimeMessagingException("Failed to send email with updated details to the user");
     }
+
     return "The User details have been updated successfully for user with id: " + userId;
   }
 
   @Transactional
   public String resetPassword(UUID userId) throws RuntimeMessagingException {
-    JwtPayloadDTO authContext = Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
-            .map(Authentication::getPrincipal)
-            .filter(JwtPayloadDTO.class::isInstance)
-            .map(JwtPayloadDTO.class::cast)
-            .orElseThrow(() -> new NonAuthenticatedAccessException("Access Denied , Non Authenticated"));
+    JwtPayloadDTO authContext = getAuthContext();
 
-    User user = (User) userRepository.findByIdAndCompany_Id(userId, authContext.companyId()).orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId +" in company: " + authContext.companyId()));
+    User user = (User) userRepository.findByIdAndCompany_Id(userId, authContext.companyId())
+            .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId +" in company: " + authContext.companyId()));
+
     String newUserPassword = BcryptUtility.generateRandomPassword();
     user.setPassword(BcryptUtility.hashPassword(newUserPassword));
     userRepository.save(user);
+
     try{
       emailService.sendEmail(emailService.buildEmailDetails(user.getEmail(), newUserPassword, false));
     }catch(MessagingException e){
       throw new RuntimeMessagingException("Failed to send email with the new password to the user");
     }
-    return "Password have been rested successfully for user with id: " + userId;
-  }
 
+    return "Password have been reset successfully for user with id: " + userId;
+  }
 
   @Transactional
   public String deleteUser(UUID userId) {
-    JwtPayloadDTO authContext = Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
-            .map(Authentication::getPrincipal)
-            .filter(JwtPayloadDTO.class::isInstance)
-            .map(JwtPayloadDTO.class::cast)
-            .orElseThrow(() -> new NonAuthenticatedAccessException("Access Denied , Non Authenticated"));
+    JwtPayloadDTO authContext = getAuthContext();
+    
+    User user = (User) userRepository.findByIdAndCompany_Id(userId, authContext.companyId())
+            .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId +" in company: " + authContext.companyId()));
 
-    userRepository.deleteByIdAndCompany_Id(userId, authContext.companyId());
+    userRepository.delete(user);
+
     return "The user with userId: " + userId + " have been deleted successfully";
   }
-
 
 }
