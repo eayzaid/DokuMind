@@ -33,4 +33,7 @@ public class User {
     @ManyToOne
     @JoinColumn(name = "company_id")
     private Company company ;
+
+    @OneToOne(mappedBy = "client", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private RefreshToken refreshToken;
 }
