@@ -43,6 +43,15 @@ export type UserSummary = {
   role: string
 }
 
+/** Full user details returned by GET /users/{userId}. */
+export type UserDetail = {
+  id: string
+  firstName: string
+  lastName: string
+  email: string
+  role: string
+}
+
 /** Paginated response from GET /users. */
 export type UsersResponse = {
   totalNumberOfUsers: number

@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import UserTableRow from './UserTableRow'
+import UserDetailDialog from './UserDetailDialog'
 import type { UserSummary } from '../types'
 
 interface UserTableProps {
@@ -27,33 +29,50 @@ function PlaceholderRow({ message }: { message: string }) {
  *
  * Delegates each data row to `UserTableRow` and handles the three
  * display states (loading, empty/error, data) in one place.
+ * Clicking a row opens `UserDetailDialog` to show full user details.
  */
 function UserTable({ users, isLoading, error }: UserTableProps) {
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead className="bg-muted text-xs uppercase tracking-[0.2em] text-muted-foreground">
-          <tr>
-            <th className="px-6 py-3 text-left font-semibold">User ID</th>
-            <th className="px-6 py-3 text-left font-semibold">First name</th>
-            <th className="px-6 py-3 text-left font-semibold">Last name</th>
-            <th className="px-6 py-3 text-left font-semibold">Role</th>
-          </tr>
-        </thead>
-        <tbody>
-          {isLoading ? (
-            <PlaceholderRow message="Loading users…" />
-          ) : users.length === 0 ? (
-            <PlaceholderRow
-              message={error ?? 'No users found for the selected filters.'}
-            />
-          ) : (
-            users.map((user) => <UserTableRow key={user.id} user={user} />)
-          )}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-muted text-xs uppercase tracking-[0.2em] text-muted-foreground">
+            <tr>
+              <th className="px-6 py-3 text-left font-semibold">User ID</th>
+              <th className="px-6 py-3 text-left font-semibold">First name</th>
+              <th className="px-6 py-3 text-left font-semibold">Last name</th>
+              <th className="px-6 py-3 text-left font-semibold">Role</th>
+            </tr>
+          </thead>
+          <tbody>
+            {isLoading ? (
+              <PlaceholderRow message="Loading users…" />
+            ) : users.length === 0 ? (
+              <PlaceholderRow
+                message={error ?? 'No users found for the selected filters.'}
+              />
+            ) : (
+              users.map((user) => (
+                <UserTableRow
+                  key={user.id}
+                  user={user}
+                  onClick={setSelectedUserId}
+                />
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <UserDetailDialog
+        userId={selectedUserId}
+        onClose={() => setSelectedUserId(null)}
+      />
+    </>
   )
 }
 
 export default UserTable
+
