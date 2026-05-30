@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import { Toaster } from '@/components/ui/sonner'
 import Login from './pages/auth/Login'
 import Signup from './pages/auth/Signup'
 import AdminLayout from './pages/admin/AdminLayout'
@@ -8,21 +9,25 @@ import RoleMock from './pages/RoleMock'
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/auth/login" replace />} />
-      <Route path="/auth/login" element={<Login />} />
-      <Route path="/auth/signup" element={<Signup />} />
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<SuperRHAdmin />} />
-        <Route path="users" element={<UserManagement />} />
-      </Route>
-      <Route path="/rh" element={<RoleMock />} />
-      <Route path="/assistant" element={<RoleMock />} />
-      <Route path="/worker" element={<RoleMock />} />
-      <Route path="/role" element={<RoleMock />} />
-      <Route path="*" element={<Navigate to="/auth/login" replace />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/" element={<Navigate to="/auth/login" replace />} />
+        <Route path="/auth/login" element={<Login />} />
+        <Route path="/auth/signup" element={<Signup />} />
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<SuperRHAdmin />} />
+          <Route path="users" element={<UserManagement />} />
+        </Route>
+        <Route path="/rh" element={<RoleMock />} />
+        <Route path="/assistant" element={<RoleMock />} />
+        <Route path="/worker" element={<RoleMock />} />
+        <Route path="/role" element={<RoleMock />} />
+        <Route path="*" element={<Navigate to="/auth/login" replace />} />
+      </Routes>
+      <Toaster />
+    </>
   )
 }
 
 export default App
+

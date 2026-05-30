@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import {
   Dialog,
   DialogContent,
@@ -17,9 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { fetchUserById } from '../api'
+import { fetchUserById, resetUserPassword, updateUser } from '../api'
 import { CREATE_USER_ROLE_OPTIONS } from '../constants'
-import type { UserDetail } from '../types'
+import type { UserDetail, CreateUserValues } from '../types'
 
 interface UserDetailDialogProps {
   /** The ID of the user to display, or null when the dialog is closed. */
@@ -77,6 +78,8 @@ function UserDetailDialog({ userId, onClose }: UserDetailDialogProps) {
   const [user, setUser] = useState<UserDetail | null>(null)
   const [form, setForm] = useState<EditState | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isResetting, setIsResetting] = useState(false)
+  const [isUpdating, setIsUpdating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Fetch user data whenever the dialog opens with a new userId
@@ -121,6 +124,46 @@ function UserDetailDialog({ userId, onClose }: UserDetailDialogProps) {
 
   const handleFieldChange = (key: keyof EditState, value: string) => {
     setForm((prev) => (prev ? { ...prev, [key]: value } : prev))
+  }
+
+  const handleResetPassword = async () => {
+    if (!user) return
+    setIsResetting(true)
+    try {
+      await resetUserPassword(user.id)
+      toast.success('Password reset successfully', {
+        description: `A new password has been set for ${user.firstName} ${user.lastName}.`,
+      })
+    } catch {
+      toast.error('Failed to reset password', {
+        description: 'An error occurred. Please try again.',
+      })
+    } finally {
+      setIsResetting(false)
+    }
+  }
+
+  const handleUpdate = async () => {
+    if (!user || !form) return
+    setIsUpdating(true)
+    try {
+      const payload: CreateUserValues = {
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        email: form.email.trim(),
+        role: form.role as CreateUserValues['role'],
+      }
+      await updateUser(user.id, payload)
+      toast.success('User updated successfully', {
+        description: `${payload.firstName} ${payload.lastName}'s details have been saved.`,
+      })
+    } catch {
+      toast.error('Failed to update user', {
+        description: 'An error occurred. Please try again.',
+      })
+    } finally {
+      setIsUpdating(false)
+    }
   }
 
   return (
@@ -212,21 +255,19 @@ function UserDetailDialog({ userId, onClose }: UserDetailDialogProps) {
               variant="outline"
               size="sm"
               className="w-full sm:w-auto"
-              onClick={() => {
-                // TODO: wire to reset-password endpoint
-              }}
+              disabled={isResetting}
+              onClick={handleResetPassword}
             >
-              Reset password
+              {isResetting ? 'Resetting…' : 'Reset password'}
             </Button>
             <Button
               type="button"
               size="sm"
               className="w-full sm:w-auto"
-              onClick={() => {
-                // TODO: wire to update-user endpoint
-              }}
+              disabled={isUpdating || isResetting}
+              onClick={handleUpdate}
             >
-              Update
+              {isUpdating ? 'Updating…' : 'Update'}
             </Button>
           </DialogFooter>
         )}
