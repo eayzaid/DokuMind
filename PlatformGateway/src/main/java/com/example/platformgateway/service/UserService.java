@@ -74,8 +74,10 @@ public class UserService {
     );
   }
 
+
+
   @Transactional
-  public CreateUserResponseDTO createUser(CreateUserRequestDTO createUserRequestDTO) throws RuntimeMessagingException {
+  public CreateUserResponseDTO createUser(CreatePatchUserRequestDTO createPatchUserRequestDTO) throws RuntimeMessagingException {
     String userPassword = BcryptUtility.generateRandomPassword();
     JwtPayloadDTO authContext = Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
             .map(Authentication::getPrincipal)
@@ -83,12 +85,12 @@ public class UserService {
             .map(JwtPayloadDTO.class::cast)
             .orElseThrow(() -> new NonAuthenticatedAccessException("Access Denied , Non Authenticated"));
 
-    if(createUserRequestDTO.role().equals(Role.SUPER_RH)) throw new BadRequestException("Cannot create a user with SUPER_RH role");
+    if(createPatchUserRequestDTO.role().equals(Role.SUPER_RH)) throw new BadRequestException("Cannot create a user with SUPER_RH role");
     User newUser = User.builder()
-            .firstName(createUserRequestDTO.firstName())
-            .lastName(createUserRequestDTO.lastName())
-            .email(createUserRequestDTO.email())
-            .role(createUserRequestDTO.role())
+            .firstName(createPatchUserRequestDTO.firstName())
+            .lastName(createPatchUserRequestDTO.lastName())
+            .email(createPatchUserRequestDTO.email())
+            .role(createPatchUserRequestDTO.role())
             .password(BcryptUtility.hashPassword(userPassword))
             .company(companyRepository.findById(authContext.companyId()).orElseThrow(() -> new BadRequestException("Company not found")))
             .build();
@@ -100,4 +102,51 @@ public class UserService {
     }
     return new CreateUserResponseDTO(savedUser.getId());
   }
+
+  @Transactional
+  public String patchUser(CreatePatchUserRequestDTO createPatchUserRequestDTO , UUID userId) throws RuntimeMessagingException {
+    JwtPayloadDTO authContext = Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
+            .map(Authentication::getPrincipal)
+            .filter(JwtPayloadDTO.class::isInstance)
+            .map(JwtPayloadDTO.class::cast)
+            .orElseThrow(() -> new NonAuthenticatedAccessException("Access Denied , Non Authenticated"));
+
+    if(createPatchUserRequestDTO.role().equals(Role.SUPER_RH)) throw new BadRequestException("Cannot create a user with SUPER_RH role");
+
+    User userToPatch = (User) userRepository.findByIdAndCompany_Id(userId, authContext.companyId()).orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId +" in company: " + authContext.companyId()));
+    userToPatch.setFirstName(createPatchUserRequestDTO.firstName());
+    userToPatch.setLastName(createPatchUserRequestDTO.lastName());
+    userToPatch.setEmail(createPatchUserRequestDTO.email());
+    userToPatch.setRole(createPatchUserRequestDTO.role());
+    userRepository.save(userToPatch);
+
+    try{
+      emailService.sendEmail(emailService.buildEmailDetails(userToPatch.getEmail(), "The same as your last password", false));
+    }catch(MessagingException e){
+      throw new RuntimeMessagingException("Failed to send email with updated details to the user");
+    }
+    return "The User details have been updated successfully for user with id: " + userId;
+  }
+
+  @Transactional
+  public String resetPassword(UUID userId) throws RuntimeMessagingException {
+    JwtPayloadDTO authContext = Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
+            .map(Authentication::getPrincipal)
+            .filter(JwtPayloadDTO.class::isInstance)
+            .map(JwtPayloadDTO.class::cast)
+            .orElseThrow(() -> new NonAuthenticatedAccessException("Access Denied , Non Authenticated"));
+
+    User user = (User) userRepository.findByIdAndCompany_Id(userId, authContext.companyId()).orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId +" in company: " + authContext.companyId()));
+    String newUserPassword = BcryptUtility.generateRandomPassword();
+    user.setPassword(BcryptUtility.hashPassword(newUserPassword));
+    userRepository.save(user);
+    try{
+      emailService.sendEmail(emailService.buildEmailDetails(user.getEmail(), newUserPassword, false));
+    }catch(MessagingException e){
+      throw new RuntimeMessagingException("Failed to send email with the new password to the user");
+    }
+    return "Password have been rested successfully for user with id: " + userId;
+  }
+
+
 }
