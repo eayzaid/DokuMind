@@ -30,6 +30,12 @@ interface CreateUserDialogProps {
    * The parent should use this to refresh the user list.
    */
   onSuccess: () => void
+  /**
+   * Role options rendered in the Role select.
+   * Defaults to all creatable roles (RH, Assistant, Worker).
+   * Pass a restricted subset (e.g. only Assistant + Worker) for RH users.
+   */
+  roleOptions?: Array<{ value: string; label: string }>
 }
 
 /** Inline error message rendered beneath an invalid field. */
@@ -50,7 +56,7 @@ function FieldError({ message }: { message?: string }) {
  * Does NOT own the user list — it calls `onSuccess` so the parent
  * can decide how to react (typically by triggering a re-fetch).
  */
-function CreateUserDialog({ onSuccess }: CreateUserDialogProps) {
+function CreateUserDialog({ onSuccess, roleOptions = CREATE_USER_ROLE_OPTIONS }: CreateUserDialogProps) {
   const [open, setOpen] = useState(false)
   const [formState, setFormState] = useState<CreateUserFormState>(
     DEFAULT_CREATE_USER_FORM,
@@ -221,7 +227,7 @@ function CreateUserDialog({ onSuccess }: CreateUserDialogProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
-                  {CREATE_USER_ROLE_OPTIONS.map((option) => (
+                  {roleOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
