@@ -3,6 +3,7 @@ package com.example.platformgateway.service;
 import com.example.platformgateway.exception.BadRequestException;
 import com.example.platformgateway.exception.NonAuthenticatedAccessException;
 import com.example.platformgateway.exception.RuntimeMessagingException;
+import com.example.platformgateway.exception.UserNotFoundException;
 import com.example.platformgateway.model.dto.*;
 import com.example.platformgateway.model.entity.User;
 import com.example.platformgateway.model.enums.Role;
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -51,6 +53,25 @@ public class UserService {
                     user.getRole()
             )).toList();
     return new UserSummaryResponseDTO( userPage.getTotalElements() , userPage.getTotalPages() , users );
+  }
+
+  public FetchUserResponseDTO getUser( UUID userId ){
+
+    //necessary to get the user info from the admin tenant only
+    JwtPayloadDTO authContext = Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
+            .map(Authentication::getPrincipal)
+            .filter(JwtPayloadDTO.class::isInstance)
+            .map(JwtPayloadDTO.class::cast)
+            .orElseThrow(() -> new NonAuthenticatedAccessException("Access Denied , Non Authenticated"));
+
+    User user = (User) userRepository.findByIdAndCompany_Id(userId,authContext.companyId()).orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId +" in company: " + authContext.companyId()));
+    return new FetchUserResponseDTO(
+            user.getId(),
+            user.getFirstName(),
+            user.getLastName(),
+            user.getEmail(),
+            user.getRole()
+    );
   }
 
   @Transactional

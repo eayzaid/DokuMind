@@ -2,6 +2,7 @@ package com.example.platformgateway.controller;
 
 import com.example.platformgateway.model.dto.CreateUserRequestDTO;
 import com.example.platformgateway.model.dto.CreateUserResponseDTO;
+import com.example.platformgateway.model.dto.FetchUserResponseDTO;
 import com.example.platformgateway.model.dto.UserSummaryResponseDTO;
 import com.example.platformgateway.model.enums.Role;
 import com.example.platformgateway.service.UserService;
@@ -28,6 +29,11 @@ public class UserController {
           @RequestParam(name = "role", required = false) Role role
   ){
     return ResponseEntity.ok(userService.getAllUsers(page,firstName,lastName,role));
+  }
+
+  @GetMapping("/{userId}")
+  public ResponseEntity<FetchUserResponseDTO> getUser(@PathVariable String userId){
+    return ResponseEntity.ok(userService.getUser(java.util.UUID.fromString(userId)));
   }
 
   @PostMapping

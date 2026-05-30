@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<User , UUID> {
@@ -28,4 +29,6 @@ public interface UserRepository extends JpaRepository<User , UUID> {
             @org.springframework.data.repository.query.Param("companyId") UUID companyId,
             Pageable pageable
     );
+
+    Optional<Object> findByIdAndCompany_Id(UUID id, UUID companyId);
 }
