@@ -1,9 +1,6 @@
 package com.example.platformgateway.service;
 
-import com.example.platformgateway.exception.BadRequestException;
-import com.example.platformgateway.exception.NonAuthenticatedAccessException;
-import com.example.platformgateway.exception.RuntimeMessagingException;
-import com.example.platformgateway.exception.UserNotFoundException;
+import com.example.platformgateway.exception.*;
 import com.example.platformgateway.model.dto.*;
 import com.example.platformgateway.model.entity.User;
 import com.example.platformgateway.model.enums.Role;
@@ -88,6 +85,12 @@ public class UserService {
       throw new BadRequestException("Cannot create a user with SUPER_RH role");
     }
 
+    if(createPatchUserRequestDTO.role().equals(Role.RH) && !authContext.role().equals(Role.SUPER_RH) ) {
+      throw new NonAuthorizadException("Cannot create a user with RH role");
+    }
+
+
+
     String userPassword = BcryptUtility.generateRandomPassword();
     User newUser = User.builder()
             .firstName(createPatchUserRequestDTO.firstName())
@@ -114,12 +117,16 @@ public class UserService {
   public String patchUser(CreatePatchUserRequestDTO createPatchUserRequestDTO, UUID userId) throws RuntimeMessagingException {
     JwtPayloadDTO authContext = getAuthContext();
 
-    if(createPatchUserRequestDTO.role().equals(Role.SUPER_RH)) {
-      throw new BadRequestException("Cannot create a user with SUPER_RH role");
-    }
-
     User userToPatch = (User) userRepository.findByIdAndCompany_Id(userId, authContext.companyId())
             .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId +" in company: " + authContext.companyId()));
+
+    if(createPatchUserRequestDTO.role().equals(Role.SUPER_RH) || userToPatch.getRole().equals(Role.SUPER_RH)) {
+      throw new BadRequestException("Cannot update a user with a SUPER_RH role");
+    }
+
+    if(authContext.role().equals(Role.RH) && createPatchUserRequestDTO.role().equals(Role.RH)){
+      throw new NonAuthorizadException("RH cannot update another RH role to a user");
+    }
 
     userToPatch.setFirstName(createPatchUserRequestDTO.firstName());
     userToPatch.setLastName(createPatchUserRequestDTO.lastName());
@@ -140,8 +147,14 @@ public class UserService {
   public String resetPassword(UUID userId) throws RuntimeMessagingException {
     JwtPayloadDTO authContext = getAuthContext();
 
+
+
     User user = (User) userRepository.findByIdAndCompany_Id(userId, authContext.companyId())
             .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId +" in company: " + authContext.companyId()));
+
+    if(user.getRole().equals(Role.RH) && !authContext.role().equals(Role.SUPER_RH)){
+      throw new NonAuthorizadException("You cannot reset the password for another RH role user");
+    }
 
     String newUserPassword = BcryptUtility.generateRandomPassword();
     user.setPassword(BcryptUtility.hashPassword(newUserPassword));
@@ -159,9 +172,18 @@ public class UserService {
   @Transactional
   public String deleteUser(UUID userId) {
     JwtPayloadDTO authContext = getAuthContext();
-    
+
     User user = (User) userRepository.findByIdAndCompany_Id(userId, authContext.companyId())
             .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId +" in company: " + authContext.companyId()));
+
+    if(user.getRole().equals(Role.SUPER_RH)) {
+      // it's a bad request , as it's not possible to delete a user with SUPER_RH role even for a SUPER_RH role user
+      throw new BadRequestException("Cannot delete a user with SUPER_RH role");
+    }
+
+    if(user.getRole().equals(Role.RH) && !authContext.role().equals(Role.SUPER_RH)){
+      throw new NonAuthorizadException("You cannot delete another RH role user");
+    }
 
     userRepository.delete(user);
 
