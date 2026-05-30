@@ -1,5 +1,5 @@
 import { apiClient } from '@/services/apiClient'
-import type { UsersResponse, FilterValues, CreateUserValues } from './types'
+import type { UsersResponse, FilterValues, CreateUserValues, UserDetail } from './types'
 
 /**
  * Fetches a paginated list of users with optional filters.
@@ -32,4 +32,15 @@ export async function fetchUsers(
  */
 export async function createUser(data: CreateUserValues): Promise<void> {
   await apiClient.post('/users', data)
+}
+
+/**
+ * Fetches the full details of a single user.
+ *
+ * Pure async function — no React hooks, no state.
+ * Throws on failure so the caller can display an appropriate error.
+ */
+export async function fetchUserById(userId: string): Promise<UserDetail> {
+  const response = await apiClient.get<UserDetail>(`/users/${userId}`)
+  return response.data
 }

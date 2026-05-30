@@ -3,6 +3,7 @@ import type { UserSummary } from '../types'
 
 interface UserTableRowProps {
   user: UserSummary
+  onClick: (userId: string) => void
 }
 
 /**
@@ -11,9 +12,12 @@ interface UserTableRowProps {
  * Isolated as its own component so it can be inspected independently
  * in React DevTools and unit-tested without rendering the full table.
  */
-function UserTableRow({ user }: UserTableRowProps) {
+function UserTableRow({ user, onClick }: UserTableRowProps) {
   return (
-    <tr className="border-b border-border last:border-b-0">
+    <tr
+      className="cursor-pointer border-b border-border transition-colors last:border-b-0 hover:bg-muted/50"
+      onClick={() => onClick(user.id)}
+    >
       <td className="px-6 py-4 text-xs text-muted-foreground">{user.id}</td>
       <td className="px-6 py-4 font-medium">{user.firstName}</td>
       <td className="px-6 py-4 font-medium">{user.lastName}</td>
