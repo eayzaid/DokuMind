@@ -35,6 +35,19 @@ export async function createUser(data: CreateUserValues): Promise<void> {
 }
 
 /**
+ * Updates an existing user.
+ *
+ * Pure async function — no React hooks, no state.
+ * Throws on failure so the caller can display an appropriate error toast.
+ */
+export async function updateUser(
+  userId: string,
+  data: CreateUserValues,
+): Promise<void> {
+  await apiClient.put(`/users/${userId}`, data)
+}
+
+/**
  * Fetches the full details of a single user.
  *
  * Pure async function — no React hooks, no state.
@@ -43,4 +56,14 @@ export async function createUser(data: CreateUserValues): Promise<void> {
 export async function fetchUserById(userId: string): Promise<UserDetail> {
   const response = await apiClient.get<UserDetail>(`/users/${userId}`)
   return response.data
+}
+
+/**
+ * Resets the password of a single user.
+ *
+ * Pure async function — no React hooks, no state.
+ * Throws on failure so the caller can display an appropriate error toast.
+ */
+export async function resetUserPassword(userId: string): Promise<void> {
+  await apiClient.post(`/users/${userId}/reset`)
 }
