@@ -84,6 +84,8 @@ The system implements multiple retrieval strategies to maximize document recall.
    - Uses an LLM (`ChatGroq`) to generate multiple semantic variations of the user's original query.
    - This overcomes cases where the user's phrasing doesn't perfectly match the document's phrasing.
    - It executes all query variations against ChromaDB and unions the results to ensure maximum coverage.
+   - **Optimization**: Obtains similarity scores directly from Chroma's child chunk search, matching them to parent documents. This completely eliminates CPU double-embedding overhead during search.
+
 
 3. **Parent Document Retriever (`parent_retriever.py`)**:
    - Uses a dual-chunking strategy.
