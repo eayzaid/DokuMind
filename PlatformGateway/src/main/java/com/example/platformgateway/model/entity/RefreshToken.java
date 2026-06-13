@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class RefreshToken {
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name="user_id",referencedColumnName = "id")
     User client;
 

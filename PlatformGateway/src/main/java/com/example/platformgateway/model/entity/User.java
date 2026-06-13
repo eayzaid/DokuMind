@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.UUID;
+import java.util.List;
 
 // the client name was necessary as the "user" name is reserved for postgres
 @Entity(name="client")
@@ -34,6 +35,6 @@ public class User {
     @JoinColumn(name = "company_id")
     private Company company ;
 
-    @OneToOne(mappedBy = "client", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private RefreshToken refreshToken;
+    @OneToMany(mappedBy = "client", cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<RefreshToken> refreshToken;
 }
