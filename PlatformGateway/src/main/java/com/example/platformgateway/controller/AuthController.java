@@ -46,6 +46,7 @@ public class AuthController {
         return ResponseEntity.ok().body(accessToken);
     }
 
+
     @PostMapping("/logout")
     public ResponseEntity<AccessTokenDTO> logout(){
         ResponseCookie logoutCookie = authService.logoutUser();

@@ -1,6 +1,13 @@
 import { useState, type FormEvent } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { DEFAULT_FILTERS, ROLE_FILTER_OPTIONS } from '../constants'
 import type { FilterValues } from '../types'
 
@@ -52,20 +59,24 @@ function UserFilterBar({ onApply, onReset }: UserFilterBarProps) {
           value={localFilters.lastName}
           onChange={(e) => handleChange('lastName', e.target.value)}
         />
-        <select
+        <Select
           name="role"
-          value={localFilters.role}
-          onChange={(e) =>
-            handleChange('role', e.target.value as FilterValues['role'])
+          value={localFilters.role || 'all'}
+          onValueChange={(val) =>
+            handleChange('role', (val === 'all' ? '' : val) as FilterValues['role'])
           }
-          className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 text-sm text-foreground focus-visible:border-ring focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
         >
-          {ROLE_FILTER_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger className="h-8">
+            <SelectValue placeholder="All roles" />
+          </SelectTrigger>
+          <SelectContent position="popper">
+            {ROLE_FILTER_OPTIONS.map((option) => (
+              <SelectItem key={option.value || 'all'} value={option.value || 'all'}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <div className="flex items-center gap-2">
           <Button type="submit" size="sm">
             Apply
