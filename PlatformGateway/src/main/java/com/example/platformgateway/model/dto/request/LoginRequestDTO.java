@@ -1,4 +1,4 @@
-package com.example.platformgateway.model.dto;
+package com.example.platformgateway.model.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

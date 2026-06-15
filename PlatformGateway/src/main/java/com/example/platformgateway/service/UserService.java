@@ -1,0 +1,195 @@
+package com.example.platformgateway.service;
+
+import com.example.platformgateway.exception.*;
+import com.example.platformgateway.model.dto.request.*;
+import com.example.platformgateway.model.dto.response.*;
+import com.example.platformgateway.model.dto.common.*;
+import com.example.platformgateway.model.entity.User;
+import com.example.platformgateway.model.enums.Role;
+import com.example.platformgateway.repository.CompanyRepository;
+import com.example.platformgateway.repository.UserRepository;
+import com.example.platformgateway.utils.BcryptUtility;
+import jakarta.mail.MessagingException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+@Service
+public class UserService {
+
+  private final UserRepository userRepository;
+  private final CompanyRepository companyRepository;
+  private final EmailService emailService;
+
+  public UserService(UserRepository userRepository, CompanyRepository companyRepository , EmailService emailService){
+    this.userRepository = userRepository;
+    this.companyRepository = companyRepository;
+    this.emailService = emailService;
+  }
+
+  /**
+   * Helper method to extract the JWT payload from the Security Context.
+   */
+  private JwtPayloadDTO getAuthContext() {
+    return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
+            .map(Authentication::getPrincipal)
+            .filter(JwtPayloadDTO.class::isInstance)
+            .map(JwtPayloadDTO.class::cast)
+            .orElseThrow(() -> new NonAuthenticatedAccessException("Access Denied , Non Authenticated"));
+  }
+
+  public UserSummaryResponseDTO getAllUsers(int page, String firstName, String lastName, Role role){
+    int sizeOfPage = 10;
+    Pageable pageRequested = PageRequest.of(page, sizeOfPage);
+    JwtPayloadDTO authContext = getAuthContext();
+
+    Page<User> userPage = userRepository.findFiltered(firstName, lastName, role, authContext.companyId(), pageRequested);
+    List<UserSummaryDTO> users = userPage.stream()
+            .map(user -> new UserSummaryDTO(
+                    user.getId(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    user.getRole()
+            )).toList();
+
+    return new UserSummaryResponseDTO(userPage.getTotalElements(), userPage.getTotalPages(), users);
+  }
+
+  public FetchUserResponseDTO getUser(UUID userId){
+    // necessary to get the user info from the admin tenant only
+    JwtPayloadDTO authContext = getAuthContext();
+
+    User user = (User) userRepository.findByIdAndCompany_Id(userId, authContext.companyId())
+            .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId +" in company: " + authContext.companyId()));
+
+    return new FetchUserResponseDTO(
+            user.getId(),
+            user.getFirstName(),
+            user.getLastName(),
+            user.getEmail(),
+            user.getRole()
+    );
+  }
+
+  @Transactional
+  public CreateUserResponseDTO createUser(CreatePatchUserRequestDTO createPatchUserRequestDTO) throws RuntimeMessagingException {
+    JwtPayloadDTO authContext = getAuthContext();
+
+    if(createPatchUserRequestDTO.role().equals(Role.SUPER_RH)) {
+      throw new BadRequestException("Cannot create a user with SUPER_RH role");
+    }
+
+    if(createPatchUserRequestDTO.role().equals(Role.RH) && !authContext.role().equals(Role.SUPER_RH) ) {
+      throw new NonAuthorizadException("Cannot create a user with RH role");
+    }
+
+
+
+    String userPassword = BcryptUtility.generateRandomPassword();
+    User newUser = User.builder()
+            .firstName(createPatchUserRequestDTO.firstName())
+            .lastName(createPatchUserRequestDTO.lastName())
+            .email(createPatchUserRequestDTO.email())
+            .role(createPatchUserRequestDTO.role())
+            .password(BcryptUtility.hashPassword(userPassword))
+            .company(companyRepository.findById(authContext.companyId())
+                    .orElseThrow(() -> new BadRequestException("Company not found")))
+            .build();
+
+    User savedUser = userRepository.save(newUser);
+
+    try{
+      emailService.sendEmail(emailService.buildEmailDetails(savedUser.getEmail(), userPassword, true));
+    }catch(MessagingException e){
+      throw new RuntimeMessagingException("Failed to send email to the new user");
+    }
+
+    return new CreateUserResponseDTO(savedUser.getId());
+  }
+
+  @Transactional
+  public String patchUser(CreatePatchUserRequestDTO createPatchUserRequestDTO, UUID userId) throws RuntimeMessagingException {
+    JwtPayloadDTO authContext = getAuthContext();
+
+    User userToPatch = (User) userRepository.findByIdAndCompany_Id(userId, authContext.companyId())
+            .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId +" in company: " + authContext.companyId()));
+
+    if(createPatchUserRequestDTO.role().equals(Role.SUPER_RH) || userToPatch.getRole().equals(Role.SUPER_RH)) {
+      throw new BadRequestException("Cannot update a user with a SUPER_RH role");
+    }
+
+    if(authContext.role().equals(Role.RH) && createPatchUserRequestDTO.role().equals(Role.RH)){
+      throw new NonAuthorizadException("RH cannot update another RH role to a user");
+    }
+
+    userToPatch.setFirstName(createPatchUserRequestDTO.firstName());
+    userToPatch.setLastName(createPatchUserRequestDTO.lastName());
+    userToPatch.setEmail(createPatchUserRequestDTO.email());
+    userToPatch.setRole(createPatchUserRequestDTO.role());
+    userRepository.save(userToPatch);
+
+    try{
+      emailService.sendEmail(emailService.buildEmailDetails(userToPatch.getEmail(), "The same as your last password", false));
+    }catch(MessagingException e){
+      throw new RuntimeMessagingException("Failed to send email with updated details to the user");
+    }
+
+    return "The User details have been updated successfully for user with id: " + userId;
+  }
+
+  @Transactional
+  public String resetPassword(UUID userId) throws RuntimeMessagingException {
+    JwtPayloadDTO authContext = getAuthContext();
+
+
+
+    User user = (User) userRepository.findByIdAndCompany_Id(userId, authContext.companyId())
+            .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId +" in company: " + authContext.companyId()));
+
+    if(user.getRole().equals(Role.RH) && !authContext.role().equals(Role.SUPER_RH)){
+      throw new NonAuthorizadException("You cannot reset the password for another RH role user");
+    }
+
+    String newUserPassword = BcryptUtility.generateRandomPassword();
+    user.setPassword(BcryptUtility.hashPassword(newUserPassword));
+    userRepository.save(user);
+
+    try{
+      emailService.sendEmail(emailService.buildEmailDetails(user.getEmail(), newUserPassword, false));
+    }catch(MessagingException e){
+      throw new RuntimeMessagingException("Failed to send email with the new password to the user");
+    }
+
+    return "Password have been reset successfully for user with id: " + userId;
+  }
+
+  @Transactional
+  public String deleteUser(UUID userId) {
+    JwtPayloadDTO authContext = getAuthContext();
+
+    User user = (User) userRepository.findByIdAndCompany_Id(userId, authContext.companyId())
+            .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId +" in company: " + authContext.companyId()));
+
+    if(user.getRole().equals(Role.SUPER_RH)) {
+      // it's a bad request , as it's not possible to delete a user with SUPER_RH role even for a SUPER_RH role user
+      throw new BadRequestException("Cannot delete a user with SUPER_RH role");
+    }
+
+    if(user.getRole().equals(Role.RH) && !authContext.role().equals(Role.SUPER_RH)){
+      throw new NonAuthorizadException("You cannot delete another RH role user");
+    }
+
+    userRepository.delete(user);
+
+    return "The user with userId: " + userId + " have been deleted successfully";
+  }
+
+}

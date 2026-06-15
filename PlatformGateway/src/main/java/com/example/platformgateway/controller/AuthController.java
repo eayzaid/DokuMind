@@ -1,9 +1,9 @@
 package com.example.platformgateway.controller;
 
 
-import com.example.platformgateway.model.dto.AccessTokenDTO;
-import com.example.platformgateway.model.dto.LoginRequestDTO;
-import com.example.platformgateway.model.dto.SignUpRequestDTO;
+import com.example.platformgateway.model.dto.response.AccessTokenDTO;
+import com.example.platformgateway.model.dto.request.LoginRequestDTO;
+import com.example.platformgateway.model.dto.request.SignUpRequestDTO;
 import com.example.platformgateway.service.AuthService;
 import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.http.ResponseCookie;
@@ -44,5 +44,14 @@ public class AuthController {
     public ResponseEntity<AccessTokenDTO> refresh(@CookieValue(value = "refresh_token") String refreshToken ){
         AccessTokenDTO accessToken  = authService.refreshAccessToken(refreshToken);
         return ResponseEntity.ok().body(accessToken);
+    }
+
+
+    @PostMapping("/logout")
+    public ResponseEntity<AccessTokenDTO> logout(){
+        ResponseCookie logoutCookie = authService.logoutUser();
+        return ResponseEntity.ok().header("Set-Cookie", logoutCookie.toString())
+                .header("Access-Control-Allow-Credentials",Boolean.toString(true))
+                .build();
     }
 }

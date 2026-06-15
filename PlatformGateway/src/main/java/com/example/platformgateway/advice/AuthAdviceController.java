@@ -2,6 +2,7 @@ package com.example.platformgateway.advice;
 
 import com.example.platformgateway.controller.AuthController;
 import com.example.platformgateway.exception.BadCredentialsException;
+import com.example.platformgateway.exception.NonAuthenticatedAccessException;
 import com.example.platformgateway.exception.TokenValidityException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;

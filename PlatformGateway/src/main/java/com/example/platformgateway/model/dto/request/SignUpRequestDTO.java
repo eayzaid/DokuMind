@@ -1,4 +1,4 @@
-package com.example.platformgateway.model.dto;
+package com.example.platformgateway.model.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
