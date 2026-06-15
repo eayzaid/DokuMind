@@ -1,235 +1,118 @@
-# DokuMind RAG Pipeline Microservice
+# DokuMind — Enterprise Intelligent Knowledge Management SaaS
 
-**DokuMind** is an enterprise SaaS platform for intelligent knowledge management. This repository contains the independent Python RAG (Retrieval-Augmented Generation) pipeline microservice, designed to handle document ingestion, multi-tenant vector storage, semantic search, and streaming chat for private company documents.
-
-It exposes a high-performance REST API that acts as a secure knowledge engine for the DokuMind Spring Boot backend.
+**DokuMind** is a multi-tenant enterprise SaaS platform designed to act as an intelligent knowledge engine for organization documents. Users can securely upload PDF policies, guidelines, and manuals, and interact with them in real-time through an advanced Retrieval-Augmented Generation (RAG) chat pipeline. 
 
 ---
 
-## 🌟 Core Architectural Features
+## 🏛️ System Architecture
 
-* **Multi-Tenant Vector Isolation**: Strictly enforces physical data separation by dynamically partitioning vector collections (`tenant_{tenant_id}`) and parent key-value stores (`docstore_{tenant_id}`) per company.
-* **Hybrid Retrieval (Multi-Query + Parent-Document)**: 
-  * Generates multiple query variations via LLM to bridge phrasing gaps.
-  * Queries high-precision 300-character child chunks in ChromaDB.
-  * Batch-retrieves corresponding 800-character parent chunks from a persistent `LocalFileStore`.
-* **Zero-Latency Embedding Optimization**: Directly matches precomputed vector cosine similarity scores of child chunks from ChromaDB and forwards them to parent contexts, completely removing CPU double-embedding bottlenecks on query paths.
-* **MS-MARCO Cross-Encoder Re-ranking**: Integrates `ms-marco-MiniLM-L-6-v2` to mathematically rank chunk relevance before context assembly.
-* **Hallucination Prevention Guardrails**: Stops the LLM from utilizing internal training weights if matching retrieved document contexts fall below the `similarity_threshold`.
+DokuMind is built as a microservices architecture consisting of three primary modules:
 
----
-
-## 🛠️ Technology Stack
-
-* **API Layer**: `FastAPI` + `Uvicorn`
-* **Orchestrator**: `LangChain`
-* **Vector Store**: `ChromaDB` (configured using cosine similarity)
-* **Embeddings**: `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` (Local execution)
-* **LLM Engine**: `Groq LPU` (`llama-3.1-8b-instant`) for ultra-low latency inference
-* **Re-ranking**: `sentence-transformers/CrossEncoder` (`ms-marco-MiniLM-L-6-v2`)
-
----
-
-## 🚀 Getting Started
-
-### 1. Prerequisites
-* Python 3.10+
-* Groq API Key (Set up your key on [Groq Console](https://console.groq.com/))
-
-### 2. Installation & Setup
-Navigate to the root directory and set up a virtual environment:
-
-```bash
-# Clone the repository
-git clone https://github.com/eayzaid/DokuMind.git
-cd DokuMind
-
-# Create a virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Install exact pinned dependencies
-pip install -r RAGPipeline/requirements.txt
+```mermaid
+graph TD
+    User([User / Browser]) -->|HTTP / SSE| FE[React FrontEnd]
+    FE -->|API Port 8080| GW[Spring Boot Platform Gateway]
+    GW -->|Database Auth| PG[(PostgreSQL)]
+    GW -->|Document Archive| MinIO[(MinIO Object Store)]
+    GW -->|Proxy / HTTP / SSE| RAG[Python RAG Pipeline]
+    RAG -->|Vector Search| Chroma[(ChromaDB)]
 ```
 
-### 3. Environment Configuration
-Create a `.env` file in the `RAGPipeline` folder:
+### 1. [Platform Gateway](file:///home/eayzaid/Projects/DokuMind/PlatformGateway) (Spring Boot)
+The secure gateway. It handles JWT authentication, User/Role Management (Admin, HR, Assistant, Worker), and stores original documents in **MinIO**. It resolves the active user's company (tenant) and proxies file ingestion and streaming chat queries to the RAG Pipeline securely.
+👉 *See [Platform Gateway documentation](file:///home/eayzaid/Projects/DokuMind/PlatformGateway/README.md) for detailed APIs and configuration.*
 
-```env
-GROQ_API_KEY=your-groq-api-key-here
-GROQ_MODEL=llama-3.1-8b-instant
-```
+### 2. [RAG Pipeline](file:///home/eayzaid/Projects/DokuMind/RAGPipeline) (FastAPI + LangChain)
+The semantic search and generation service. Using **sentence-transformers**, it splits documents into parent-child chunks and indexes them in a tenant-isolated **ChromaDB** space. It leverages **Groq** LPUs for low-latency streaming chat response generation and incorporates MS-MARCO re-ranking and hallucination prevention guardrails.
+👉 *See [RAG Pipeline documentation](file:///home/eayzaid/Projects/DokuMind/RAGPipeline/README.md) for retrieval logic and API details.*
 
-### 4. Running the Server
-Run the Uvicorn ASGI server:
+### 3. [FrontEnd](file:///home/eayzaid/Projects/DokuMind/FrontEnd) (React + Vite + Tailwind CSS)
+The modern web application UI. Renders dynamic dashboards matching the authenticated user's role: admin control panel, HR employee roster management, document tables, and real-time streaming chat feeds.
+👉 *See [FrontEnd documentation](file:///home/eayzaid/Projects/DokuMind/FrontEnd/README.md) for UI structures and setup.*
 
+---
+
+## 🚀 Step-by-Step Getting Started Guide
+
+You can run the entire stack instantly using Docker Compose, or run services manually.
+
+### Method A: Fast Run via Docker Compose (Recommended)
+
+Make sure you have **Docker** and **Docker Compose** installed.
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/eayzaid/DokuMind.git
+   cd DokuMind
+   ```
+
+2. **Configure your API Keys**:
+   Open [docker-compose.yml](file:///home/eayzaid/Projects/DokuMind/docker-compose.yml) and input your `GROQ_API_KEY` under the `ragpipeline` service environment:
+   ```yaml
+     ragpipeline:
+       ...
+       environment:
+         GROQ_API_KEY: "your-groq-api-key-here"
+   ```
+
+3. **Start all services**:
+   ```bash
+   docker compose up --build
+   ```
+
+4. **Access the applications**:
+   * **FrontEnd Web UI**: [http://localhost](http://localhost)
+   * **Platform Gateway**: [http://localhost:8080](http://localhost:8080)
+   * **RAG Pipeline (Swagger UI)**: [http://localhost:8001/docs](http://localhost:8001/docs)
+   * **MinIO Console (Object Store)**: [http://localhost:9001](http://localhost:9001) (User: `admin` / Password: `adminpassword`)
+
+---
+
+### Method B: Manual Service Setup (Local Development)
+
+If you prefer to run each service individually on your local system:
+
+#### 1. RAG Pipeline Setup
+Prerequisites: Python 3.10+, ChromaDB service running locally on port `8000`.
 ```bash
 cd RAGPipeline
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 ```
-
-The interactive OpenAPI docs will be available at `http://localhost:8000/docs`.
-
----
-
-## 🔌 Detailed API Reference & JSON Formats
-
-All API endpoints (except `/health`) are prefixed with `/api`. By default, the microservice runs on `http://localhost:8000`.
-
-### 1. Ingest PDF Document (`POST /api/ingest`)
-Processes a text-based PDF page-by-page, chunking them into parent-child structures and embedding them into a tenant-isolated ChromaDB collection.
-* **HTTP Method**: `POST`
-* **Content-Type**: `multipart/form-data`
-* **Payload**:
-  * `file`: (Binary PDF file)
-  * `tenant_id`: `string` (e.g. `company_alpha`)
-
-#### 📥 Curl Example:
+Create a `.env` file inside `RAGPipeline`:
+```env
+GROQ_API_KEY=your_key_here
+GROQ_MODEL=llama-3.1-8b-instant
+CHROMA_HOST=localhost
+CHROMA_PORT=8000
+```
+Run the FastAPI application:
 ```bash
-curl -X POST "http://localhost:8000/api/ingest" \
-  -F "file=@/path/to/test.pdf" \
-  -F "tenant_id=company_alpha"
+uvicorn main:app --port 8000 --reload
 ```
 
-#### 📤 JSON Response Format (200 OK):
-```json
-{
-  "filename": "test.pdf",
-  "pages_processed": 4,
-  "chunks_stored": 13,
-  "tenant_id": "company_alpha"
-}
-```
-
-#### 📤 JSON Error Response (422 Unprocessable Content):
-```json
-{
-  "detail": "No text could be extracted from 'test.pdf'. Only text-based PDFs are supported."
-}
-```
-
----
-
-### 2. Streaming Chat Response (`POST /api/chat`)
-Streams response tokens dynamically via Server-Sent Events (SSE) using the Groq Llama 3.1 8B model grounded by retrieved context documents.
-* **HTTP Method**: `POST`
-* **Content-Type**: `application/json`
-* **Request Body**:
-```json
-{
-  "question": "What is the company remote work policy?",
-  "tenant_id": "company_alpha",
-  "history": [
-    {
-      "role": "user",
-      "content": "Hello, I have a question about HR."
-    },
-    {
-      "role": "assistant",
-      "content": "Sure, please ask your question."
-    }
-  ]
-}
-```
-*Note: The `history` field is optional and defaults to `[]`.*
-
-#### 📥 Curl Example:
+#### 2. Platform Gateway Setup
+Prerequisites: Java 17+, PostgreSQL database running on port `5432`, MinIO running on port `9000`.
+Ensure environment variables are set or configured in `PlatformGateway/src/main/resources/application.yml`.
+Run the application:
 ```bash
-curl -X POST "http://localhost:8000/api/chat" \
-  -H "Content-Type: application/json" \
-  -d '{"question": "What is the remote policy?", "tenant_id": "company_alpha"}'
+cd PlatformGateway
+./mvnw spring-boot:run
 ```
 
-#### 📤 Streaming Response Format (200 OK):
-* **Response Content-Type**: `text/plain`
-* **Payload**: Streamed raw text tokens (e.g. `The`, ` remote`, ` work`, ` policy`, ` allows...`).
-
----
-
-### 3. List Ingested Documents (`GET /api/documents`)
-Lists all documents currently indexed for a specific tenant workspace.
-* **HTTP Method**: `GET`
-* **Query Parameters**:
-  * `tenant_id`: `string` (Required)
-
-#### 📥 Curl Example:
+#### 3. FrontEnd Setup
+Prerequisites: Node.js 18+.
 ```bash
-curl "http://localhost:8000/api/documents?tenant_id=company_alpha"
+cd FrontEnd
+npm install
 ```
-
-#### 📤 JSON Response Format (200 OK):
-```json
-{
-  "tenant_id": "company_alpha",
-  "documents": [
-    {
-      "filename": "policy_remote_work.pdf",
-      "chunks": 12
-    },
-    {
-      "filename": "code_of_conduct.pdf",
-      "chunks": 28
-    }
-  ],
-  "total_chunks": 40
-}
+Create a `.env` in `FrontEnd`:
+```env
+VITE_API_URL=http://localhost:8080
 ```
-
----
-
-### 4. Delete Document (`DELETE /api/documents`)
-Removes all vector child nodes, document metadata, and parent files from the database and disk storage.
-* **HTTP Method**: `DELETE`
-* **Query Parameters**:
-  * `filename`: `string` (Required)
-  * `tenant_id`: `string` (Required)
-
-#### 📥 Curl Example:
+Run the development server:
 ```bash
-curl -X DELETE "http://localhost:8000/api/documents?filename=policy_remote_work.pdf&tenant_id=company_alpha"
+npm run dev
 ```
-
-#### 📤 JSON Response Format (200 OK):
-```json
-{
-  "deleted_chunks": 12,
-  "filename": "policy_remote_work.pdf",
-  "tenant_id": "company_alpha"
-}
-```
-
-#### 📤 JSON Error Response (404 Not Found):
-```json
-{
-  "detail": "No document 'policy_remote_work.pdf' found for tenant 'company_alpha'"
-}
-```
-
----
-
-### 5. Health Check (`GET /health`)
-Retrieves service health status and configurations.
-* **HTTP Method**: `GET`
-
-#### 📥 Curl Example:
-```bash
-curl "http://localhost:8000/health"
-```
-
-#### 📤 JSON Response Format (200 OK - Healthy):
-```json
-{
-  "status": "ok",
-  "chromadb": "ok",
-  "model": "llama-3.1-8b-instant"
-}
-```
-
-#### 📤 JSON Response Format (200 OK - Degraded):
-```json
-{
-  "status": "degraded",
-  "error": "SQLite connection timeout"
-}
-```
-
+Open [http://localhost:5173](http://localhost:5173) in your browser.

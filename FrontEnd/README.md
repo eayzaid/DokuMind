@@ -1,75 +1,82 @@
-# React + TypeScript + Vite
+# DokuMind FrontEnd Web Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The **FrontEnd** application is a premium, modern, responsive Single Page Application (SPA) designed to serve as the user interface for DokuMind. It is tailored for high-quality user experience (UX) with dark-mode styling, glassmorphism, smooth interactive transitions, and responsive multi-dashboard layouts.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🛠️ Technology Stack
 
-## React Compiler
+* **Core Framework**: `React 19` & `TypeScript`
+* **Build Tool**: `Vite 8` (with HMR support)
+* **Styling**: `Tailwind CSS 3/4` (via `@tailwindcss/vite` configuration)
+* **Animations**: `Framer Motion` (for micro-animations and transition states)
+* **Iconography**: `Lucide React`
+* **Components**: Custom styled foundations built using Radix UI primitives & `shadcn`
+* **Routing**: `React Router Dom v7`
+* **API Client**: `Axios` (with preconfigured interceptors for automatic JWT silent token refresh)
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+---
 
-Note: This will impact Vite dev & build performances.
+## 📂 Project Structure & Pages
 
-## Expanding the ESLint configuration
+The application utilizes role-based authorization to render dedicated workspace layouts:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+src/
+├── App.tsx             # Main entry point with route definitions
+├── main.tsx            # React DOM mounting
+├── index.css           # Global CSS variables and Tailwind imports
+├── components/         # Reusable UI parts (buttons, modals, input elements, etc.)
+├── pages/              # Specific views and layouts:
+│   ├── auth/           # Login & Sign-up forms
+│   ├── admin/          # Admin Layout & User Administration
+│   ├── rh/             # HR Layout & Employee Management
+│   ├── worker/         # Chat-only dashboard for basic workers
+│   ├── assistant/      # Assistant Layout with document management & chat
+│   ├── chat/           # Global chat module with SSE text streaming
+│   ├── DocumentManagement.tsx # Shared file upload, listing, and deletion interface
+│   └── RoleMock.tsx    # Mock interface to easily swap roles during testing
+├── services/           # apiClient instance definitions
+└── context/            # Global context providers (e.g. Theme, Authentication)
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 👤 Role-Based Portals
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Depending on the role assigned to the authenticated user, the router serves a tailored layout:
+* **Admin Dashboard (`/admin`)**:
+  - Full permissions to manage enterprise documents.
+  - CRUD operations over user profiles.
+  - Interactive knowledge-grounded chat interface.
+* **HR Manager Dashboard (`/rh`)**:
+  - Add, update, and manage employee accounts inside the company.
+  - Complete document upload and document database management capabilities.
+  - Grounded chat.
+* **Assistant Portal (`/assistant`)**:
+  - Ingest new PDF documents.
+  - Query knowledge via the chat panel.
+* **Worker Portal (`/worker`)**:
+  - Simple, streamlined, chat-only client. Allowed to query the company database but cannot edit or view document lists.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
+
+## 🚀 Getting Started
+
+### 1. Installation
+Navigate to the `FrontEnd` directory and install the project dependencies:
+```bash
+cd FrontEnd
+npm install
 ```
+
+### 2. Configure Environment Variables
+Create or edit `.env` in the `FrontEnd` root:
+```env
+VITE_API_URL=http://localhost:8080
+```
+
+### 3. Start Development Server
+Run the local Vite development server:
+```bash
+npm run dev
+```
+The application will launch on `http://localhost:5173`.
