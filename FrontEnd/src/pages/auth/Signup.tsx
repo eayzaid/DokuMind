@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
+import { BrandLogo } from '@/components/BrandLogo'
 import { useAuth } from '../../context/AuthProvider'
 import { signUpUser } from './signup/fetching'
 
@@ -36,7 +37,10 @@ function AssistantWindow() {
         <span className="h-2.5 w-2.5 rounded-full bg-[#FF6058]" />
         <span className="h-2.5 w-2.5 rounded-full bg-[#FFBD2E]" />
         <span className="h-2.5 w-2.5 rounded-full bg-[#28CA41]" />
-        <span className="ml-2 font-semibold">DokuMind Assistant</span>
+        <div className="ml-2 flex items-center gap-2">
+          <BrandLogo size="sm" showWordmark={false} />
+          <span className="font-semibold">DokuMind Assistant</span>
+        </div>
       </div>
       <div className="mt-4 space-y-3 text-xs">
         <div className="ml-auto max-w-[75%] rounded-xl bg-doku-rose px-3 py-2 text-doku-cream">
@@ -140,10 +144,7 @@ function Signup() {
       <div className="grid min-h-screen w-full grid-cols-1 lg:grid-cols-[1.1fr_1fr]">
         <section className="flex flex-col items-center justify-center px-6 py-12 text-center sm:px-10 lg:items-start lg:px-14 lg:text-left">
           <div className="flex w-full items-center justify-center gap-3 text-doku-chocolate lg:justify-start">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-doku-dusty/30 bg-white text-sm font-semibold">
-              DM
-            </div>
-            <div className="text-base font-semibold tracking-wide">DokuMind</div>
+            <BrandLogo size="md" className="gap-3" />
           </div>
 
           <div className="mt-10 w-full max-w-xl">

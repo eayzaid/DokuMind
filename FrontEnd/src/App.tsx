@@ -3,7 +3,6 @@ import { Toaster } from '@/components/ui/sonner'
 import Login from './pages/auth/Login'
 import Signup from './pages/auth/Signup'
 import AdminLayout from './pages/admin/AdminLayout'
-import SuperRHAdmin from './pages/admin/SuperRHAdmin'
 import UserManagement from './pages/admin/UserManagement'
 import RHLayout from './pages/rh/RHLayout'
 import RHUserManagement from './pages/rh/UserManagement'
@@ -50,4 +49,3 @@ function App() {
 }
 
 export default App
-

@@ -15,7 +15,8 @@ import {
   SidebarProvider,
   SidebarSeparator,
 } from '@/components/ui/sidebar'
-import { FileText, LayoutDashboard, LogOut, ShieldCheck, Users, MessageSquare } from 'lucide-react'
+import { BrandLogo } from '@/components/BrandLogo'
+import { FileText, LogOut, ShieldCheck, Users, MessageSquare } from 'lucide-react'
 import { apiClient } from '@/services/apiClient'
 
 const navigationItems = [
@@ -93,17 +94,14 @@ function AdminLayout() {
         className="sticky top-0 h-svh shrink-0 border-r border-sidebar-border"
       >
         <SidebarHeader className="px-4 pb-3 pt-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-              SR
-            </div>
-            <div className="flex flex-col">
-              <span className="text-sm font-semibold">SuperRH</span>
-              <span className="text-xs text-sidebar-foreground opacity-70">
-                Admin workspace
-              </span>
-            </div>
-          </div>
+          <BrandLogo
+            size="sm"
+            label="DokuMind"
+            subtitle="SuperRH workspace"
+            className="text-sidebar-foreground"
+            labelClassName="text-sm text-sidebar-foreground"
+            subtitleClassName="text-xs text-sidebar-foreground/70"
+          />
         </SidebarHeader>
         <SidebarSeparator />
         <SidebarContent>
@@ -112,27 +110,7 @@ function AdminLayout() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {navigationItems.map((item) => {
-                  const isActive = item.to
-                    ? item.to === '/admin'
-                      ? location.pathname === item.to
-                      : location.pathname.startsWith(item.to)
-                    : false
-
-                  if (!item.to) {
-                    return (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton
-                          isActive={isActive}
-                          tooltip={item.title}
-                          disabled={item.isDisabled}
-                        >
-                          <item.icon />
-                          <span>{item.title}</span>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    )
-                  }
-
+                  const isActive = location.pathname.startsWith(item.to)
                   return (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton

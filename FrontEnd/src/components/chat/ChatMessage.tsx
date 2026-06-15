@@ -1,4 +1,3 @@
-import React from 'react'
 import { Bot, User } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import type { Message } from '@/types/chat'

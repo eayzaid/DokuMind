@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 interface DocumentUploadProps {
   isUploading: boolean
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-  fileInputRef: React.RefObject<HTMLInputElement>
+  fileInputRef: React.RefObject<HTMLInputElement | null>
 }
 
 export function DocumentUpload({ isUploading, onFileChange, fileInputRef }: DocumentUploadProps) {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { apiClient } from "@/services/apiClient"

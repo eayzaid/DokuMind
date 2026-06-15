@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { BrandLogo } from '@/components/BrandLogo'
 import { useAuth } from '../context/AuthProvider'
 
 function RoleMock() {
@@ -7,6 +8,7 @@ function RoleMock() {
   return (
     <div className="min-h-screen bg-doku-cream text-doku-chocolate">
       <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col items-center justify-center gap-6 px-6 text-center">
+        <BrandLogo size="lg" className="justify-center" />
         <div>
           <p className="text-xs uppercase tracking-[0.3em] text-doku-dusty/70">
             Auth status

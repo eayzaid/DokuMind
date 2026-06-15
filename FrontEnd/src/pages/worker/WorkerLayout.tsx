@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 import { LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { BrandLogo } from '@/components/BrandLogo'
 import { apiClient } from '@/services/apiClient'
 
 function WorkerLayout() {
@@ -21,17 +22,13 @@ function WorkerLayout() {
     <div className="min-h-svh bg-background text-foreground flex flex-col">
       {/* Top Navigation Bar */}
       <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6">
-        <div className="flex items-center gap-3">
-          <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground font-semibold">
-            W
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold">DokuMind</span>
-            <span className="text-xs text-muted-foreground">
-              Worker Workspace
-            </span>
-          </div>
-        </div>
+        <BrandLogo
+          size="sm"
+          label="DokuMind"
+          subtitle="Worker workspace"
+          labelClassName="text-sm"
+          subtitleClassName="text-xs"
+        />
 
         <div className="flex items-center gap-4">
           <Button
