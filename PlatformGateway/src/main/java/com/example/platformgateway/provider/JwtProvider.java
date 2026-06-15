@@ -1,13 +1,12 @@
 package com.example.platformgateway.provider;
 import com.example.platformgateway.exception.TokenValidityException;
-import com.example.platformgateway.model.dto.JwtPayloadDTO;
+import com.example.platformgateway.model.dto.common.JwtPayloadDTO;
 import com.example.platformgateway.model.entity.RefreshToken;
 import com.example.platformgateway.model.entity.User;
 import com.example.platformgateway.model.enums.Role;
 import com.example.platformgateway.repository.RefreshTokenRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
-import org.antlr.v4.runtime.Token;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

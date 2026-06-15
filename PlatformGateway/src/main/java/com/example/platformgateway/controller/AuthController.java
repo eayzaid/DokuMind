@@ -1,9 +1,9 @@
 package com.example.platformgateway.controller;
 
 
-import com.example.platformgateway.model.dto.AccessTokenDTO;
-import com.example.platformgateway.model.dto.LoginRequestDTO;
-import com.example.platformgateway.model.dto.SignUpRequestDTO;
+import com.example.platformgateway.model.dto.response.AccessTokenDTO;
+import com.example.platformgateway.model.dto.request.LoginRequestDTO;
+import com.example.platformgateway.model.dto.request.SignUpRequestDTO;
 import com.example.platformgateway.service.AuthService;
 import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.http.ResponseCookie;

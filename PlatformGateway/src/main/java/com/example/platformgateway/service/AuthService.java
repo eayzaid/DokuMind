@@ -1,8 +1,8 @@
 package com.example.platformgateway.service;
 import com.example.platformgateway.exception.BadCredentialsException;
-import com.example.platformgateway.model.dto.AccessTokenDTO;
-import com.example.platformgateway.model.dto.LoginRequestDTO;
-import com.example.platformgateway.model.dto.SignUpRequestDTO;
+import com.example.platformgateway.model.dto.response.AccessTokenDTO;
+import com.example.platformgateway.model.dto.request.LoginRequestDTO;
+import com.example.platformgateway.model.dto.request.SignUpRequestDTO;
 import com.example.platformgateway.model.entity.Company;
 import com.example.platformgateway.model.entity.User;
 import com.example.platformgateway.model.enums.Role;

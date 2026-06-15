@@ -1,4 +1,4 @@
-package com.example.platformgateway.model.dto;
+package com.example.platformgateway.model.dto.common;
 
 import com.example.platformgateway.model.enums.Role;
 

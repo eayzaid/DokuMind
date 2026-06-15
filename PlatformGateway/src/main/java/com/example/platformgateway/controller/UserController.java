@@ -1,9 +1,9 @@
 package com.example.platformgateway.controller;
 
-import com.example.platformgateway.model.dto.CreatePatchUserRequestDTO;
-import com.example.platformgateway.model.dto.CreateUserResponseDTO;
-import com.example.platformgateway.model.dto.FetchUserResponseDTO;
-import com.example.platformgateway.model.dto.UserSummaryResponseDTO;
+import com.example.platformgateway.model.dto.request.CreatePatchUserRequestDTO;
+import com.example.platformgateway.model.dto.response.CreateUserResponseDTO;
+import com.example.platformgateway.model.dto.response.FetchUserResponseDTO;
+import com.example.platformgateway.model.dto.response.UserSummaryResponseDTO;
 import com.example.platformgateway.model.enums.Role;
 import com.example.platformgateway.service.UserService;
 import org.springframework.http.ResponseEntity;

@@ -1,6 +1,6 @@
 package com.example.platformgateway.config;
 
-import com.example.platformgateway.model.dto.JwtPayloadDTO;
+import com.example.platformgateway.model.dto.common.JwtPayloadDTO;
 import com.example.platformgateway.provider.JwtProvider;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,16 +26,26 @@ public class JwtFilter extends OncePerRequestFilter{
   protected void doFilterInternal(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws java.io.IOException, ServletException {
 
         String authHeader = request.getHeader("Authorization");
+        String token = null;
+        
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-          String token = authHeader.substring(7);
-          System.out.println("Extracted Token: " + token); // Debugging line
-          JwtPayloadDTO payload = jwtProvider.decodeToken(token);
-          UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                  payload,
-                  null,
-                  java.util.Collections.emptyList() // No authorities for simplicity
-          );
-          SecurityContextHolder.getContext().setAuthentication(authentication);
+            token = authHeader.substring(7);
+        } else if (request.getParameter("token") != null) {
+            token = request.getParameter("token");
+        }
+
+        if (token != null) {
+          try {
+              JwtPayloadDTO payload = jwtProvider.decodeToken(token);
+              UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                      payload,
+                      null,
+                      java.util.Collections.emptyList() // No authorities for simplicity
+              );
+              SecurityContextHolder.getContext().setAuthentication(authentication);
+          } catch (Exception e) {
+              // Token invalid or expired, ignore to let security config handle it
+          }
         }
         filterChain.doFilter(request, response);
     }

@@ -20,7 +20,7 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-	private JwtFilter jwtFilter;
+	private final JwtFilter jwtFilter;
 
 	public SecurityConfig(JwtFilter jwtFilter){
 		this.jwtFilter = jwtFilter;

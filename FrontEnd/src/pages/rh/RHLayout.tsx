@@ -15,7 +15,7 @@ import {
   SidebarProvider,
   SidebarSeparator,
 } from '@/components/ui/sidebar'
-import { FileText, LogOut, ShieldCheck, Users } from 'lucide-react'
+import { FileText, LogOut, ShieldCheck, Users, MessageSquare } from 'lucide-react'
 import { apiClient } from '@/services/apiClient'
 
 /**
@@ -31,7 +31,12 @@ const navigationItems = [
   {
     title: 'Document management',
     icon: FileText,
-    isDisabled: true,
+    to: '/rh/documents',
+  },
+  {
+    title: 'Chat Assistant',
+    icon: MessageSquare,
+    to: '/rh/chat',
   },
 ]
 
@@ -44,10 +49,15 @@ const headerCopy: Record<string, { title: string; subtitle: string }> = {
     title: 'Document management',
     subtitle: 'Knowledge files and ingestion controls',
   },
+  chat: {
+    title: 'Chat Assistant',
+    subtitle: 'Ask questions about your indexed documents',
+  },
 }
 
 function getHeaderForPath(pathname: string) {
   if (pathname.startsWith('/rh/documents')) return headerCopy.documents
+  if (pathname.startsWith('/rh/chat')) return headerCopy.chat
   return headerCopy.users
 }
 
@@ -162,10 +172,6 @@ function RHLayout() {
             <span className="text-xs text-muted-foreground">
               {header.subtitle}
             </span>
-          </div>
-          <div className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground">
-            <span className="size-2 rounded-full bg-doku-rose" />
-            Mock environment
           </div>
         </header>
         <div className="flex flex-1 flex-col px-6 py-6">

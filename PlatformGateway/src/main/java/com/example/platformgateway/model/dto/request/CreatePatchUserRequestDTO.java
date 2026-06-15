@@ -1,4 +1,4 @@
-package com.example.platformgateway.model.dto;
+package com.example.platformgateway.model.dto.request;
 
 import com.example.platformgateway.model.enums.Role;
 import jakarta.validation.constraints.Email;

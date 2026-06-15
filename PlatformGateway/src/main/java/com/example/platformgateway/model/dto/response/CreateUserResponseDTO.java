@@ -1,4 +1,4 @@
-package com.example.platformgateway.model.dto;
+package com.example.platformgateway.model.dto.response;
 
 import java.util.UUID;
 

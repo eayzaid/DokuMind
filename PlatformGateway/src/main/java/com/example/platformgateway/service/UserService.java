@@ -1,7 +1,9 @@
 package com.example.platformgateway.service;
 
 import com.example.platformgateway.exception.*;
-import com.example.platformgateway.model.dto.*;
+import com.example.platformgateway.model.dto.request.*;
+import com.example.platformgateway.model.dto.response.*;
+import com.example.platformgateway.model.dto.common.*;
 import com.example.platformgateway.model.entity.User;
 import com.example.platformgateway.model.enums.Role;
 import com.example.platformgateway.repository.CompanyRepository;

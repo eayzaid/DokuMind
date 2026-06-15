@@ -15,60 +15,42 @@ import {
   SidebarProvider,
   SidebarSeparator,
 } from '@/components/ui/sidebar'
-import { FileText, LayoutDashboard, LogOut, ShieldCheck, Users, MessageSquare } from 'lucide-react'
+import { FileText, LogOut, ShieldCheck, MessageSquare } from 'lucide-react'
 import { apiClient } from '@/services/apiClient'
 
+/**
+ * Navigation items available to Assistant users.
+ */
 const navigationItems = [
   {
-    title: 'User management',
-    icon: Users,
-    to: '/admin/users',
+    title: 'Chat Assistant',
+    icon: MessageSquare,
+    to: '/assistant/chat',
   },
   {
     title: 'Document management',
     icon: FileText,
-    to: '/admin/documents',
-  },
-  {
-    title: 'Chat Assistant',
-    icon: MessageSquare,
-    to: '/admin/chat',
+    to: '/assistant/documents',
   },
 ]
 
-const headerCopy = {
-  dashboard: {
-    title: 'SuperRH dashboard',
-    subtitle: 'Mockup workspace overview',
-  },
-  users: {
-    title: 'User management',
-    subtitle: 'Manage access, roles, and workforce records',
+const headerCopy: Record<string, { title: string; subtitle: string }> = {
+  chat: {
+    title: 'Assistant Workspace',
+    subtitle: 'Ask questions about your indexed documents',
   },
   documents: {
     title: 'Document management',
     subtitle: 'Knowledge files and ingestion controls',
   },
-  chat: {
-    title: 'Chat Assistant',
-    subtitle: 'Ask questions about your indexed documents',
-  },
 }
 
 function getHeaderForPath(pathname: string) {
-  if (pathname.startsWith('/admin/users')) {
-    return headerCopy.users
-  }
-  if (pathname.startsWith('/admin/documents')) {
-    return headerCopy.documents
-  }
-  if (pathname.startsWith('/admin/chat')) {
-    return headerCopy.chat
-  }
-  return headerCopy.dashboard
+  if (pathname.startsWith('/assistant/documents')) return headerCopy.documents
+  return headerCopy.chat
 }
 
-function AdminLayout() {
+function AssistantLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const header = getHeaderForPath(location.pathname)
@@ -79,8 +61,6 @@ function AdminLayout() {
     try {
       await apiClient.post('/auth/logout')
     } finally {
-      // Navigate to login regardless of outcome — the session is gone
-      // on the server side and the cookie is cleared.
       navigate('/auth/login')
     }
   }
@@ -95,17 +75,19 @@ function AdminLayout() {
         <SidebarHeader className="px-4 pb-3 pt-4">
           <div className="flex items-center gap-3">
             <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-              SR
+              AS
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-semibold">SuperRH</span>
+              <span className="text-sm font-semibold">DokuMind</span>
               <span className="text-xs text-sidebar-foreground opacity-70">
-                Admin workspace
+                Assistant
               </span>
             </div>
           </div>
         </SidebarHeader>
+
         <SidebarSeparator />
+
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupLabel>Navigation</SidebarGroupLabel>
@@ -113,9 +95,7 @@ function AdminLayout() {
               <SidebarMenu>
                 {navigationItems.map((item) => {
                   const isActive = item.to
-                    ? item.to === '/admin'
-                      ? location.pathname === item.to
-                      : location.pathname.startsWith(item.to)
+                    ? location.pathname.startsWith(item.to)
                     : false
 
                   if (!item.to) {
@@ -152,10 +132,11 @@ function AdminLayout() {
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
+
         <SidebarFooter className="px-4 pb-4">
           <div className="flex items-center gap-2 rounded-full border border-sidebar-border bg-sidebar-accent px-3 py-2 text-xs text-sidebar-accent-foreground">
             <ShieldCheck />
-            <span>Role: SuperRH</span>
+            <span>Role: Assistant</span>
           </div>
           <SidebarMenu>
             <SidebarMenuItem>
@@ -172,6 +153,7 @@ function AdminLayout() {
           </SidebarMenu>
         </SidebarFooter>
       </Sidebar>
+
       <SidebarInset className="min-h-svh bg-background">
         <header className="flex min-h-16 items-center justify-between border-b px-6">
           <div className="flex flex-col">
@@ -181,7 +163,7 @@ function AdminLayout() {
             </span>
           </div>
         </header>
-        <div className="flex flex-1 flex-col px-6 py-6">
+        <div className="flex flex-1 flex-col px-6 py-6 h-[calc(100svh-4rem)]">
           <Outlet />
         </div>
       </SidebarInset>
@@ -189,4 +171,4 @@ function AdminLayout() {
   )
 }
 
-export default AdminLayout
+export default AssistantLayout
