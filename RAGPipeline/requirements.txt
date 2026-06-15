@@ -24,7 +24,7 @@ frozenlist==1.8.0
 fsspec==2026.3.0
 googleapis-common-protos==1.74.0
 greenlet==3.3.2
-groq==1.1.2
+groq<1.0.0
 grpcio==1.80.0
 h11==0.16.0
 hf-xet==1.4.3
@@ -46,7 +46,9 @@ kubernetes==35.0.0
 langchain==1.2.15
 langchain-classic==1.0.3
 langchain-community==0.4.1
+langchain-huggingface
 langchain-core==1.2.26
+langchain-chroma
 langchain-groq==1.1.2
 langchain-ollama==1.0.1
 langchain-text-splitters==1.1.1

@@ -22,7 +22,7 @@ def get_chroma_collection(tenant_id: str):
     Returns the ChromaDB collection for a specific tenant.
     Each tenant gets their own isolated collection.
     """
-    client = chromadb.PersistentClient(path=settings.chroma_persist_dir)
+    client = chromadb.HttpClient(host=settings.chroma_host, port=settings.chroma_port)
     
     collection_name = f"tenant_{tenant_id}"
     
@@ -86,7 +86,7 @@ def delete_document(filename: str, tenant_id: str) -> int:
     import os
     from langchain_classic.storage import LocalFileStore
 
-    client = chromadb.PersistentClient(path=settings.chroma_persist_dir)
+    client = chromadb.HttpClient(host=settings.chroma_host, port=settings.chroma_port)
     child_collection_name = f"tenant_{tenant_id}_child"
     
     try:

@@ -14,7 +14,7 @@ app.include_router(router, prefix="/api")
 @app.get("/health")
 def health():
     try:
-        client = chromadb.PersistentClient(path=settings.chroma_persist_dir)
+        client = chromadb.HttpClient(host=settings.chroma_host, port=settings.chroma_port)
         client.list_collections()
         return {"status": "ok", "chromadb": "ok", "model": settings.groq_model}
     except Exception as e:

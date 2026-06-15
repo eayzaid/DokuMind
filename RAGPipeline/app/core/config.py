@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     groq_model: str = "llama-3.1-8b-instant"
 
     # ChromaDB
+    chroma_host: str = "chromadb"
+    chroma_port: int = 8000
     chroma_persist_dir: str = os.path.join(BASE_DIR, "chroma_db")
 
     # Retrieval
