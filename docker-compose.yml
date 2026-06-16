@@ -93,12 +93,6 @@ services:
       ragpipeline:
         condition: service_healthy
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health >/dev/null 2>&1"]
-      interval: 10s
-      timeout: 5s
-      retries: 12
-      start_period: 20s
 
   frontend:
     build:
@@ -111,5 +105,5 @@ services:
       - "80:80"
     depends_on:
       platformgateway:
-        condition: service_healthy
+        condition: service_started
     restart: unless-stopped
