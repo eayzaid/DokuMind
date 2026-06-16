@@ -1,0 +1,123 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: 'postgres:15'
+    container_name: dokumind-postgres
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_PASSWORD: secret
+      POSTGRES_USER: myuser
+    ports:
+      - '5432:5432'
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d mydatabase"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: 'minio/minio:latest'
+    container_name: dokumind-minio
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: adminpassword
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: dokumind-chromadb
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./RAGPipeline/chroma_db_data:/chroma/chroma
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/heartbeat', timeout=3)\""]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  ragpipeline:
+    build:
+      context: ./RAGPipeline
+      dockerfile: Dockerfile
+    container_name: dokumind-ragpipeline
+    environment:
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      GROQ_MODEL: "llama-3.3-70b-versatile"
+      CHROMA_HOST: "chromadb"
+      CHROMA_PORT: "8000"
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./RAGPipeline/chroma_db:/app/chroma_db
+    depends_on:
+      chromadb:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  platformgateway:
+    build:
+      context: ./PlatformGateway
+      dockerfile: Dockerfile
+    container_name: dokumind-platformgateway
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/mydatabase
+      SPRING_DATASOURCE_USERNAME: myuser
+      SPRING_DATASOURCE_PASSWORD: secret
+      APPLICATION_SECRET_REFRESH_TOKEN: ${APPLICATION_SECRET_REFRESH_TOKEN}
+      APPLICATION_SECRET_ACCESS_TOKEN: ${APPLICATION_SECRET_ACCESS_TOKEN}
+      SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME}
+      SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
+      MINIO_URL: http://minio:9000
+      MINIO_ACCESS_NAME: admin
+      MINIO_ACCESS_SECRET: adminpassword
+      RAG_PIPELINE_URL: http://ragpipeline:8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      ragpipeline:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  frontend:
+    build:
+      context: ./FrontEnd
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8080
+    container_name: dokumind-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      platformgateway:
+        condition: service_healthy
+    restart: unless-stopped

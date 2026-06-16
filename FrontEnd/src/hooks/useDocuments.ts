@@ -3,6 +3,12 @@ import { toast } from 'sonner'
 import { apiClient } from '@/services/apiClient'
 import type { IngestedDocument } from '@/types/documents'
 
+const RETRYABLE_STATUS_CODES = new Set([500, 502, 503, 504])
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
 export function useDocuments() {
   const [documents, setDocuments] = useState<IngestedDocument[]>([])
   const [totalChunks, setTotalChunks] = useState(0)
@@ -12,16 +18,33 @@ export function useDocuments() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const fetchDocuments = useCallback(async () => {
+    setIsLoading(true)
+    const maxAttempts = 3
+
     try {
-      setIsLoading(true)
-      const response = await apiClient.get('/documents')
-      const data = response.data
-      setDocuments(data.documents || [])
-      setTotalChunks(data.total_chunks || 0)
-    } catch (error: any) {
-      toast.error('Failed to load documents', {
-        description: error.message || 'Check connection to RAG pipeline.',
-      })
+      for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+        try {
+          const response = await apiClient.get('/documents')
+          const data = response.data
+          setDocuments(data.documents || [])
+          setTotalChunks(data.total_chunks || 0)
+          return
+        } catch (error: any) {
+          const status = error?.response?.status
+          const shouldRetry =
+            attempt < maxAttempts && (!status || RETRYABLE_STATUS_CODES.has(status))
+
+          if (shouldRetry) {
+            await sleep(400 * attempt)
+            continue
+          }
+
+          toast.error('Failed to load documents', {
+            description: error.message || 'Check connection to RAG pipeline.',
+          })
+          return
+        }
+      }
     } finally {
       setIsLoading(false)
     }
