@@ -2,6 +2,12 @@ spring.application.name=PlatformGateway
 spring.jpa.hibernate.ddl-auto=create-drop
 spring.sql.init.mode=always
 spring.jpa.defer-datasource-initialization=true
+spring.mvc.async.request-timeout=10m
+
+# Datasource configuration
+spring.datasource.url=jdbc:postgresql://localhost:5432/mydatabase
+spring.datasource.username=myuser
+spring.datasource.password=secret
 
 logging.level.org.hibernate.SQL=DEBUG
 logging.level.org.hibernate.orm.jdbc.bind=TRACE
@@ -20,8 +26,20 @@ spring.mail.password="password_example"
 spring.mail.properties.mail.smtp.auth=true
 spring.mail.properties.mail.smtp.starttls.enable=true
 
+# MinIO configuration
+minio.url=http://localhost:9000
+minio.access.name=admin
+minio.access.secret=adminpassword
+minio.bucket.name=documents
+
+# RAG pipeline configuration
+rag.pipeline.url=http://localhost:8000
+
+# Multipart upload limits
+spring.servlet.multipart.max-file-size=50MB
+spring.servlet.multipart.max-request-size=50MB
+
 email.templates.welcome.subject=Welcome to our platform!
 email.templates.welcome.bodyText=Your account has been created successfully. Your temporary password is below. Please change it after logging in.
 email.templates.reset.subject=Password Reset Request
 email.templates.reset.bodyText=Your password has been reset. Your new temporary password is below. Please change it after logging in.
-
