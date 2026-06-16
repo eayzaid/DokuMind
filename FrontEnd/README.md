@@ -1,6 +1,6 @@
 # DokuMind FrontEnd Web Application
 
-The **FrontEnd** application is a premium, modern, responsive Single Page Application (SPA) designed to serve as the user interface for DokuMind. It is tailored for high-quality user experience (UX) with dark-mode styling, glassmorphism, smooth interactive transitions, and responsive multi-dashboard layouts.
+The **FrontEnd** application is a premium, modern, responsive Single Page Application (SPA) designed to serve as the user interface for DokuMind. It uses a warm branded theme, layered surfaces, smooth transitions, and responsive multi-dashboard layouts.
 
 ---
 
@@ -33,7 +33,7 @@ src/
 │   ├── rh/             # HR Layout & Employee Management
 │   ├── worker/         # Chat-only dashboard for basic workers
 │   ├── assistant/      # Assistant Layout with document management & chat
-│   ├── chat/           # Global chat module with SSE text streaming
+│   ├── chat/           # Global chat module with streamed text responses
 │   ├── DocumentManagement.tsx # Shared file upload, listing, and deletion interface
 │   └── RoleMock.tsx    # Mock interface to easily swap roles during testing
 ├── services/           # apiClient instance definitions
@@ -79,4 +79,4 @@ Run the local Vite development server:
 ```bash
 npm run dev
 ```
-The application will launch on `http://localhost:5173`.
+The application will launch on `http://localhost:5173` in local development. When served through Docker Compose, the built frontend is exposed on `http://localhost`.
