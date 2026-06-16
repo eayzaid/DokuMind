@@ -219,9 +219,9 @@ function UserDetailDialog({ userId, onClose, onDelete, roleOptions = CREATE_USER
 
   return (
     <Dialog open={!!userId} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="border border-border bg-card text-foreground shadow-warm sm:max-w-[480px]">
+      <DialogContent className="border border-border/60 bg-card/95 text-foreground shadow-[0_24px_60px_rgba(70,53,53,0.16)] sm:max-w-[480px]">
         <DialogHeader>
-          <DialogTitle>User details</DialogTitle>
+          <DialogTitle className="tracking-tight">User details</DialogTitle>
           {user && (
             <DialogDescription className="font-mono text-xs">
               {user.id}

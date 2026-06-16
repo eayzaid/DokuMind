@@ -11,14 +11,14 @@ export function ChatMessage({ message }: { message: Message }) {
       initial={{ opacity: 0, y: 15, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: "spring", damping: 25, stiffness: 300 }}
-      className={`flex gap-4 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
+      className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
     >
-      <Avatar className={`size-8 mt-1 border ${isUser ? 'border-primary/20' : 'border-border'}`}>
+      <Avatar className={`size-8 mt-1 border ${isUser ? 'border-primary/20' : 'border-border/70'}`}>
         <AvatarFallback className={isUser ? 'bg-primary text-primary-foreground' : 'bg-muted text-foreground'}>
           {isUser ? <User size={16} /> : <Bot size={16} />}
         </AvatarFallback>
       </Avatar>
-      <div className={`flex flex-col max-w-[80%] ${isUser ? 'items-end' : 'items-start'}`}>
+      <div className={`flex max-w-[80%] flex-col ${isUser ? 'items-end' : 'items-start'}`}>
         <div
           className={`rounded-2xl px-4 py-3 text-sm shadow-sm ${
             isUser
@@ -27,11 +27,11 @@ export function ChatMessage({ message }: { message: Message }) {
           }`}
         >
           {message.content ? (
-            <div className="whitespace-pre-wrap leading-relaxed">
+            <div className="whitespace-pre-wrap leading-7">
               {message.content}
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 h-6 px-2 py-1">
+            <div className="flex h-6 items-center gap-1.5 px-2 py-1">
               <motion.span 
                 animate={{ y: [0, -5, 0] }}
                 transition={{ duration: 0.6, repeat: Infinity, ease: "easeInOut", delay: 0 }}

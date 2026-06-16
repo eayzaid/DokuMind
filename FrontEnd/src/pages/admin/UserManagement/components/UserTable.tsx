@@ -23,7 +23,7 @@ function PlaceholderRow({ message }: { message: string }) {
     <tr>
       <td
         colSpan={4}
-        className="px-6 py-6 text-center text-sm text-muted-foreground"
+        className="px-6 py-8 text-center text-sm text-muted-foreground"
       >
         {message}
       </td>
@@ -45,7 +45,7 @@ function UserTable({ users, isLoading, error, onDelete, roleOptions }: UserTable
     <>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-muted text-xs uppercase tracking-[0.2em] text-muted-foreground">
+          <thead className="bg-muted/40 text-xs uppercase tracking-[0.2em] text-muted-foreground">
             <tr>
               <th className="px-6 py-3 text-left font-semibold">User ID</th>
               <th className="px-6 py-3 text-left font-semibold">First name</th>
@@ -84,4 +84,3 @@ function UserTable({ users, isLoading, error, onDelete, roleOptions }: UserTable
 }
 
 export default UserTable
-
