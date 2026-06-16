@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     similarity_threshold: float = 0.35
     top_k_results: int = 6
     top_k_after_rerank: int = 3
+    retrieval_cache_ttl_seconds: int = 60
 
     class Config:
         env_file = ".env"

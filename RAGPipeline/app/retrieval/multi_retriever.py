@@ -1,4 +1,6 @@
 from functools import lru_cache
+import time
+import re
 
 import numpy as np
 from pydantic import SecretStr
@@ -10,6 +12,8 @@ from app.retrieval.retriever import search as standard_search
 from app.retrieval.parent_retriever import get_parent_retriever
 
 logger = get_logger(__name__)
+
+_retrieval_cache: dict[tuple[str, str], tuple[float, list[dict]]] = {}
 
 @lru_cache(maxsize=256)
 def get_multi_parent_retriever(tenant_id: str):
@@ -92,6 +96,40 @@ def _collect_parent_chunks(queries: list[str], tenant_id: str) -> list[dict]:
     return results
 
 
+def _normalize_question(question: str) -> str:
+    return " ".join(question.strip().lower().split())
+
+
+def _get_cached_retrieval(question: str, tenant_id: str) -> list[dict] | None:
+    cache_key = (tenant_id, _normalize_question(question))
+    cached = _retrieval_cache.get(cache_key)
+    if not cached:
+        return None
+
+    cached_at, payload = cached
+    if time.time() - cached_at > settings.retrieval_cache_ttl_seconds:
+        _retrieval_cache.pop(cache_key, None)
+        return None
+
+    logger.info(
+        "Retrieval cache hit for tenant '%s' question '%s'",
+        tenant_id,
+        question,
+    )
+    return [chunk.copy() for chunk in payload]
+
+
+def _set_cached_retrieval(question: str, tenant_id: str, results: list[dict]) -> None:
+    cache_key = (tenant_id, _normalize_question(question))
+    _retrieval_cache[cache_key] = (time.time(), [chunk.copy() for chunk in results])
+    logger.info(
+        "Stored retrieval cache entry for tenant '%s' question '%s' with TTL %ss",
+        tenant_id,
+        question,
+        settings.retrieval_cache_ttl_seconds,
+    )
+
+
 def search_multi(question: str, tenant_id: str) -> list[dict]:
     """
     Tries a direct parent-document lookup first.
@@ -99,12 +137,17 @@ def search_multi(question: str, tenant_id: str) -> list[dict]:
     and retry with multi-query expansion.
     """
     try:
+        cached_results = _get_cached_retrieval(question, tenant_id)
+        if cached_results is not None:
+            return cached_results
+
         direct_results = _collect_parent_chunks([question], tenant_id)
         if len(direct_results) >= settings.top_k_after_rerank:
             logger.info(
                 "Direct parent retrieval returned %d chunks; skipping query expansion",
                 len(direct_results),
             )
+            _set_cached_retrieval(question, tenant_id, direct_results)
             return direct_results
 
         logger.info(
@@ -145,13 +188,20 @@ def search_multi(question: str, tenant_id: str) -> list[dict]:
                 len(expanded_results),
                 settings.similarity_threshold,
             )
+            _set_cached_retrieval(question, tenant_id, expanded_results)
             return expanded_results
 
         logger.warning(
             "Hybrid Multi-Query Parent Retriever returned no chunks above threshold — falling back to standard"
         )
-        return standard_search(question, tenant_id)
+        standard_results = standard_search(question, tenant_id)
+        if standard_results:
+            _set_cached_retrieval(question, tenant_id, standard_results)
+        return standard_results
 
     except Exception as e:
         logger.error(f"Hybrid Multi-Query Parent Retriever failed: {e} — falling back to standard")
-        return standard_search(question, tenant_id)
+        standard_results = standard_search(question, tenant_id)
+        if standard_results:
+            _set_cached_retrieval(question, tenant_id, standard_results)
+        return standard_results
