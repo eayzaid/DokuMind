@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 import chromadb
 from sentence_transformers import SentenceTransformer
 from app.core.config import settings
@@ -17,12 +19,23 @@ def get_embedding_model() -> SentenceTransformer:
         logger.info("Embedding model loaded")
     return _embedding_model
 
+@lru_cache(maxsize=1)
+def get_chroma_client():
+    """Return a shared Chroma HTTP client for the process."""
+    logger.info(
+        "Creating shared Chroma HTTP client for %s:%s",
+        settings.chroma_host,
+        settings.chroma_port,
+    )
+    return chromadb.HttpClient(host=settings.chroma_host, port=settings.chroma_port)
+
+@lru_cache(maxsize=256)
 def get_chroma_collection(tenant_id: str):
     """
     Returns the ChromaDB collection for a specific tenant.
     Each tenant gets their own isolated collection.
     """
-    client = chromadb.HttpClient(host=settings.chroma_host, port=settings.chroma_port)
+    client = get_chroma_client()
     
     collection_name = f"tenant_{tenant_id}"
     
@@ -86,7 +99,7 @@ def delete_document(filename: str, tenant_id: str) -> int:
     import os
     from langchain_classic.storage import LocalFileStore
 
-    client = chromadb.HttpClient(host=settings.chroma_host, port=settings.chroma_port)
+    client = get_chroma_client()
     child_collection_name = f"tenant_{tenant_id}_child"
     
     try:

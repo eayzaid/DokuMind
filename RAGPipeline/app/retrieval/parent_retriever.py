@@ -1,4 +1,5 @@
 import os
+from functools import lru_cache
 import json
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -22,10 +23,16 @@ parent_splitter = RecursiveCharacterTextSplitter(
     chunk_overlap=150,
 )
 
-def get_parent_retriever(tenant_id: str):
-    embeddings = HuggingFaceEmbeddings(
+@lru_cache(maxsize=1)
+def get_embedding_wrapper():
+    """Cache the LangChain embedding wrapper once per process."""
+    return HuggingFaceEmbeddings(
         model_name="paraphrase-multilingual-MiniLM-L12-v2"
     )
+
+@lru_cache(maxsize=256)
+def get_parent_retriever(tenant_id: str):
+    embeddings = get_embedding_wrapper()
 
     vectorstore = Chroma(
         collection_name=f"tenant_{tenant_id}_child",

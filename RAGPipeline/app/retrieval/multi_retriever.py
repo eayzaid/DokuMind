@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 import numpy as np
 from pydantic import SecretStr
 from langchain_groq import ChatGroq
@@ -9,6 +11,7 @@ from app.retrieval.parent_retriever import get_parent_retriever
 
 logger = get_logger(__name__)
 
+@lru_cache(maxsize=256)
 def get_multi_parent_retriever(tenant_id: str):
     """
     Returns a MultiQueryRetriever wrapped around a ParentDocumentRetriever
