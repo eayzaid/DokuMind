@@ -3,6 +3,7 @@ from app.api.routes import router
 from app.core.config import settings
 from app.core.logging import get_logger
 from app.ingestion.embedder import get_chroma_client, get_embedding_model
+from app.retrieval.reranker import get_reranker
 
 logger = get_logger(__name__)
 
@@ -23,6 +24,7 @@ def warmup_runtime():
     try:
         get_embedding_model()
         get_chroma_client()
+        get_reranker()
         logger.info("RAG runtime warmup complete")
     except Exception as e:
         logger.warning(f"RAG runtime warmup skipped or incomplete: {e}")
