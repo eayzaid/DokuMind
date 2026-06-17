@@ -10,7 +10,7 @@ from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 from app.core.config import settings
 from app.core.logging import get_logger
-from app.ingestion.embedder import get_embedding_model
+from app.ingestion.embedder import get_embedding_model, get_chroma_client
 
 logger = get_logger(__name__)
 
@@ -41,11 +41,12 @@ def get_embedding_wrapper():
 @lru_cache(maxsize=256)
 def get_parent_retriever(tenant_id: str):
     embeddings = get_embedding_wrapper()
+    client = get_chroma_client()
 
     vectorstore = Chroma(
         collection_name=f"tenant_{tenant_id}_child",
         embedding_function=embeddings,
-        persist_directory=settings.chroma_persist_dir,
+        client=client,
         collection_metadata={"hnsw:space": "cosine"},
     )
 
