@@ -36,7 +36,7 @@ async def ingest_document(
 ):
     validate_tenant_id(tenant_id)
 
-    if not file.filename.endswith(".pdf"):
+    if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files are supported")
 
     file_bytes = await file.read()

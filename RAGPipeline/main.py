@@ -4,6 +4,7 @@ from app.core.config import settings
 from app.core.logging import get_logger
 from app.ingestion.embedder import get_chroma_client, get_embedding_model
 from app.retrieval.reranker import get_reranker
+from app.retrieval.parent_retriever import get_embedding_wrapper
 
 logger = get_logger(__name__)
 
@@ -18,13 +19,14 @@ app.include_router(router, prefix="/api")
 @app.on_event("startup")
 def warmup_runtime():
     """
-    Preload the shared embedding model and Chroma client so the first chat or
+    Preload the shared embedding models and Chroma client so the first chat or
     ingest request does not pay the cold-start penalty.
     """
     try:
         get_embedding_model()
         get_chroma_client()
         get_reranker()
+        get_embedding_wrapper()
         logger.info("RAG runtime warmup complete")
     except Exception as e:
         logger.warning(f"RAG runtime warmup skipped or incomplete: {e}")

@@ -2,14 +2,15 @@ import os
 from functools import lru_cache
 import json
 from langchain_chroma import Chroma
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_classic.retrievers import ParentDocumentRetriever
 from langchain_classic.storage import LocalFileStore
 from langchain_classic.storage._lc_store import create_kv_docstore
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
+from langchain_core.embeddings import Embeddings
 from app.core.config import settings
 from app.core.logging import get_logger
+from app.ingestion.embedder import get_embedding_model
 
 logger = get_logger(__name__)
 
@@ -23,12 +24,19 @@ parent_splitter = RecursiveCharacterTextSplitter(
     chunk_overlap=150,
 )
 
+class CachedSentenceTransformerEmbeddings(Embeddings):
+    def embed_documents(self, texts: list[str]) -> list[list[float]]:
+        model = get_embedding_model()
+        return model.encode(texts, show_progress_bar=False).tolist()
+
+    def embed_query(self, text: str) -> list[float]:
+        model = get_embedding_model()
+        return model.encode(text, show_progress_bar=False).tolist()
+
 @lru_cache(maxsize=1)
 def get_embedding_wrapper():
     """Cache the LangChain embedding wrapper once per process."""
-    return HuggingFaceEmbeddings(
-        model_name="paraphrase-multilingual-MiniLM-L12-v2"
-    )
+    return CachedSentenceTransformerEmbeddings()
 
 @lru_cache(maxsize=256)
 def get_parent_retriever(tenant_id: str):

@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
+import { toast } from 'sonner'
 import { BrandLogo } from '@/components/BrandLogo'
 import { useAuth } from '../../context/AuthProvider'
 import { loginUser } from './login/fetching'
@@ -71,6 +72,7 @@ function Login() {
   const [errors, setErrors] = useState<
     Partial<Record<keyof LoginFields, string>>
   >({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target
@@ -95,11 +97,20 @@ function Login() {
 
     setErrors({})
     try {
+      setIsSubmitting(true)
       const authData = await loginUser(result.data)
       setAuth(authData)
       navigate(getRolePath(authData.role), { replace: true })
-    } catch {
-      return
+    } catch (error: any) {
+      toast.error('Sign in failed', {
+        description:
+          error.response?.data?.detail ||
+          error.response?.data?.message ||
+          error.message ||
+          'Please check your email and password.',
+      })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -188,9 +199,10 @@ function Login() {
 
             <button
               type="submit"
+              disabled={isSubmitting}
               className="w-full rounded-md bg-doku-rose px-4 py-3 text-sm font-semibold text-doku-cream shadow-card transition duration-200 hover:bg-doku-dusty"
             >
-              Sign in
+              {isSubmitting ? 'Signing in...' : 'Sign in'}
             </button>
 
             <div className="flex flex-col items-center gap-2 text-xs text-doku-chocolate/60 sm:flex-row sm:justify-between">

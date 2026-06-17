@@ -62,7 +62,6 @@ public class JwtProvider {
         String token = getToken(user,refreshTokenSecret,this.refreshTokenExpirationSeconds);
         RefreshToken refreshTokenRecord = RefreshToken.builder().token(token).client(user).build();
         refreshTokenRepository.deleteByClient(user);
-        refreshTokenRepository.flush();
         refreshTokenRepository.save(refreshTokenRecord);
         return token;
     }

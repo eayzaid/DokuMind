@@ -46,9 +46,7 @@ export function useDocuments() {
       setIsUploading(true)
       const formData = new FormData()
       formData.append('file', file)
-      const response = await apiClient.post('/documents/ingest', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      })
+      const response = await apiClient.post('/documents/ingest', formData)
       const res = response.data
       toast.success('Document uploaded successfully', {
         description: res.pages_processed ? `Processed ${res.pages_processed} pages into ${res.chunks_stored} chunks.` : 'Document has been uploaded and processed.',

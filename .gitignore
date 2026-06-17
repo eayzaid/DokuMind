@@ -4,3 +4,4 @@ __pycache__/
 .antigravitycli/
 bin/
 docker-compose.yml
+.env

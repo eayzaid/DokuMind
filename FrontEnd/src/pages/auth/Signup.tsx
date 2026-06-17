@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
+import { toast } from 'sonner'
 import { BrandLogo } from '@/components/BrandLogo'
 import { useAuth } from '../../context/AuthProvider'
 import { signUpUser } from './signup/fetching'
@@ -68,6 +69,7 @@ function Signup() {
   const [errors, setErrors] = useState<
     Partial<Record<keyof SignupFields, string>>
   >({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const passwordChecks = [
     {
@@ -124,6 +126,7 @@ function Signup() {
 
     setErrors({})
     try {
+      setIsSubmitting(true)
       const authData = await signUpUser({
         first_name: result.data.firstName,
         last_name: result.data.lastName,
@@ -134,8 +137,16 @@ function Signup() {
       })
       setAuth(authData)
       navigate(getRolePath(authData.role), { replace: true })
-    } catch {
-      return
+    } catch (error: any) {
+      toast.error('Create account failed', {
+        description:
+          error.response?.data?.detail ||
+          error.response?.data?.message ||
+          error.message ||
+          'Please review the form and try again.',
+      })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -359,9 +370,10 @@ function Signup() {
 
             <button
               type="submit"
+              disabled={isSubmitting}
               className="w-full rounded-md bg-doku-rose px-4 py-3 text-sm font-semibold text-doku-cream shadow-card transition duration-200 hover:bg-doku-dusty"
             >
-              Create account
+              {isSubmitting ? 'Creating account...' : 'Create account'}
             </button>
 
             <div className="flex flex-col items-center gap-2 text-xs text-doku-chocolate/60 sm:flex-row sm:justify-between">
