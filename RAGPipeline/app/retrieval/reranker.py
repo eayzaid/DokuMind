@@ -3,15 +3,18 @@ from app.core.logging import get_logger
 
 logger = get_logger(__name__)
 
-# Small, fast cross-encoder — works well on CPU
+import threading
+
 _reranker_model = None
+_reranker_lock = threading.Lock()
 
 def get_reranker():
     global _reranker_model
-    if _reranker_model is None:
-        logger.info("Loading reranker model: cross-encoder/ms-marco-MiniLM-L-6-v2")
-        _reranker_model = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
-        logger.info("Reranker model loaded")
+    with _reranker_lock:
+        if _reranker_model is None:
+            logger.info("Loading reranker model: cross-encoder/ms-marco-MiniLM-L-6-v2")
+            _reranker_model = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
+            logger.info("Reranker model loaded")
     return _reranker_model
 
 def rerank(question: str, chunks: list[dict]) -> list[dict]:

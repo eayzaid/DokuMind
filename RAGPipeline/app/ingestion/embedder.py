@@ -7,16 +7,18 @@ from app.core.logging import get_logger
 
 logger = get_logger(__name__)
 
-# Load the embedding model once when the module is imported
-# This avoids reloading it on every request (it's 80MB)
+import threading
+
 _embedding_model = None
+_embedding_lock = threading.Lock()
 
 def get_embedding_model() -> SentenceTransformer:
     global _embedding_model
-    if _embedding_model is None:
-        logger.info("Loading embedding model: paraphrase-multilingual-MiniLM-L12-v2")
-        _embedding_model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
-        logger.info("Embedding model loaded")
+    with _embedding_lock:
+        if _embedding_model is None:
+            logger.info("Loading embedding model: paraphrase-multilingual-MiniLM-L12-v2")
+            _embedding_model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+            logger.info("Embedding model loaded")
     return _embedding_model
 
 @lru_cache(maxsize=1)

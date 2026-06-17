@@ -53,8 +53,6 @@ services:
       GROQ_MODEL: ${GROQ_MODEL}
       CHROMA_HOST: "chromadb"
       CHROMA_PORT: "8000"
-      HF_HUB_OFFLINE: "1"
-      TRANSFORMERS_OFFLINE: "1"
     ports:
       - "8001:8000"
     volumes:

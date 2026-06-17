@@ -19,17 +19,21 @@ app.include_router(router, prefix="/api")
 @app.on_event("startup")
 def warmup_runtime():
     """
-    Preload the shared embedding models and Chroma client so the first chat or
-    ingest request does not pay the cold-start penalty.
+    Preload the shared embedding models and Chroma client in a background thread
+    so the FastAPI server starts up instantly without blocking connection requests.
     """
-    try:
-        get_embedding_model()
-        get_chroma_client()
-        get_reranker()
-        get_embedding_wrapper()
-        logger.info("RAG runtime warmup complete")
-    except Exception as e:
-        logger.warning(f"RAG runtime warmup skipped or incomplete: {e}")
+    import threading
+    def do_warmup():
+        try:
+            get_embedding_model()
+            get_chroma_client()
+            get_reranker()
+            get_embedding_wrapper()
+            logger.info("RAG runtime warmup complete")
+        except Exception as e:
+            logger.warning(f"RAG runtime warmup skipped or incomplete: {e}")
+            
+    threading.Thread(target=do_warmup, daemon=True).start()
 
 @app.get("/health")
 def health():
