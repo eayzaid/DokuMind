@@ -31,10 +31,10 @@ All routes are exposed on port `8080`.
 
 ```json
 {
-  "firstName": "John",
-  "lastName": "Doe",
-  "companyName": "Acme Corp",
-  "companyAddress": "1 Main Street",
+  "first_name": "John",
+  "last_name": "Doe",
+  "company_name": "Acme Corp",
+  "company_address": "1 Main Street",
   "email": "john.doe@acme.com",
   "password": "SecurePassword123!"
 }
