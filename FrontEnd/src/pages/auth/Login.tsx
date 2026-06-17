@@ -2,7 +2,9 @@ import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 import { toast } from 'sonner'
+import heroArt from '@/assets/hero.png'
 import { BrandLogo } from '@/components/BrandLogo'
+import { Card, CardContent } from '@/components/ui/card'
 import { useAuth } from '../../context/AuthProvider'
 import { loginUser } from './login/fetching'
 
@@ -19,46 +21,50 @@ const loginSchema = z.object({
 
 type LoginFields = z.infer<typeof loginSchema>
 
-const panelBackground = {
-  backgroundImage:
-    'radial-gradient(circle at 15% 20%, rgba(255, 248, 234, 0.9), transparent 40%), radial-gradient(circle at 75% 15%, rgba(158, 118, 118, 0.45), transparent 45%), radial-gradient(circle at 65% 75%, rgba(129, 91, 91, 0.35), transparent 50%), linear-gradient(140deg, #f7edd9 0%, #e9d3d3 45%, #d2b6b6 100%)',
-}
-
 function SecureWorkspaceWindow() {
   return (
-    <div className="w-full max-w-md rounded-2xl border border-white/60 bg-white/55 p-6 shadow-[0_24px_60px_rgba(89,69,69,0.18)] backdrop-blur">
-      <div className="flex items-center gap-2 text-xs text-doku-chocolate/70">
-        <span className="h-2.5 w-2.5 rounded-full bg-[#FF6058]" />
-        <span className="h-2.5 w-2.5 rounded-full bg-[#FFBD2E]" />
-        <span className="h-2.5 w-2.5 rounded-full bg-[#28CA41]" />
-        <div className="ml-2 flex items-center gap-2">
+    <Card className="w-full max-w-lg border-border/70 bg-card/80 shadow-[0_28px_70px_rgba(70,53,53,0.14)] backdrop-blur-xl">
+      <CardContent className="grid gap-5 p-6">
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <span className="h-2.5 w-2.5 rounded-full bg-[#FF6058]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#FFBD2E]" />
+          <span className="h-2.5 w-2.5 rounded-full bg-[#28CA41]" />
           <BrandLogo size="sm" showWordmark={false} />
-          <span className="font-semibold">DokuMind Enterprise Portal</span>
+          <span className="font-semibold text-foreground">DokuMind workspace</span>
         </div>
-      </div>
-      <div className="mt-4 rounded-xl border border-white/70 bg-white/80 p-5 shadow-sm">
-        <p className="text-sm font-semibold text-doku-chocolate">
-          DokuMind Enterprise Portal
-        </p>
-        <p className="mt-2 text-xs text-doku-chocolate/65">
-          Keep sensitive knowledge isolated, verified, and ready for your teams.
-        </p>
-        <div className="mt-4 grid gap-3 text-xs text-doku-chocolate/70">
-          <div className="flex items-center justify-between rounded-md border border-doku-dusty/20 bg-doku-cream px-3 py-2">
-            <span>Workspace encryption</span>
-            <span className="font-semibold text-doku-rose">Active</span>
+        <div className="overflow-hidden rounded-2xl border border-border/60 bg-muted/20">
+          <img
+            src={heroArt}
+            alt=""
+            aria-hidden="true"
+            className="h-44 w-full object-cover"
+          />
+        </div>
+        <div className="grid gap-3">
+          <p className="text-sm font-semibold tracking-tight text-foreground">
+            Secure access, cleaner review, faster work
+          </p>
+          <p className="text-sm leading-6 text-muted-foreground">
+            Sign in to your company workspace to manage documents, users, and
+            grounded chat in one place.
+          </p>
+        </div>
+        <div className="grid gap-3 text-sm text-muted-foreground">
+          <div className="flex items-center justify-between rounded-xl border border-border/60 bg-background/70 px-4 py-3">
+            <span>Tenant isolation</span>
+            <span className="font-medium text-foreground">Enforced</span>
           </div>
-          <div className="flex items-center justify-between rounded-md border border-doku-dusty/20 bg-white px-3 py-2">
-            <span>Role-based access</span>
-            <span className="font-semibold text-doku-dusty">Enforced</span>
+          <div className="flex items-center justify-between rounded-xl border border-border/60 bg-background/70 px-4 py-3">
+            <span>Document workflow</span>
+            <span className="font-medium text-foreground">Ready</span>
           </div>
-          <div className="flex items-center justify-between rounded-md border border-doku-dusty/20 bg-white px-3 py-2">
-            <span>Audit snapshots</span>
-            <span className="font-semibold text-doku-dusty">Daily</span>
+          <div className="flex items-center justify-between rounded-xl border border-border/60 bg-background/70 px-4 py-3">
+            <span>Grounded chat</span>
+            <span className="font-medium text-foreground">Streaming</span>
           </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -115,111 +121,112 @@ function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-doku-cream text-doku-chocolate">
-      <div className="grid min-h-screen w-full grid-cols-1 lg:grid-cols-[1.1fr_1fr]">
-        <section className="flex flex-col items-center justify-center px-6 py-12 text-center sm:px-10 lg:items-start lg:px-14 lg:text-left">
-          <div className="flex w-full items-center justify-center gap-3 text-doku-chocolate lg:justify-start">
-            <BrandLogo size="md" className="gap-3" />
-          </div>
+    <div className="min-h-screen text-foreground">
+      <div className="grid min-h-screen w-full grid-cols-1 lg:grid-cols-[1.02fr_0.98fr]">
+        <section className="flex items-center justify-center px-6 py-12 sm:px-10 lg:px-16">
+          <div className="w-full max-w-xl">
+            <BrandLogo size="lg" labelClassName="text-xl" subtitle="Secure enterprise workspace" subtitleClassName="text-sm" />
 
-          <div className="mt-10 w-full max-w-md">
-            <p className="text-xs uppercase tracking-[0.3em] text-doku-dusty/70">
-              Start your journey
-            </p>
-            <h1 className="mt-4 text-3xl font-semibold sm:text-4xl">
-              Sign in to DokuMind
-            </h1>
-            <p className="mt-3 text-sm text-doku-chocolate/70">
-              Access your secure workspace and keep knowledge flowing across
-              your team.
-            </p>
-          </div>
-
-          <form
-            className="mt-8 w-full max-w-md space-y-5"
-            onSubmit={handleSubmit}
-            noValidate
-          >
-            <div className="space-y-2">
-              <label
-                className="text-xs font-semibold uppercase tracking-[0.2em] text-doku-dusty"
-                htmlFor="email"
-              >
-                Email
-              </label>
-              <div className="relative">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formValues.email}
-                  onChange={handleChange}
-                  className="w-full rounded-md border border-doku-dusty/30 bg-white px-4 py-3 text-sm text-doku-chocolate placeholder:text-doku-chocolate/40 focus:border-doku-rose focus:outline-none focus:ring-2 focus:ring-doku-rose/20"
-                  placeholder="you@company.com"
-                  autoComplete="email"
-                  aria-invalid={Boolean(errors.email)}
-                  aria-describedby={errors.email ? 'email-error' : undefined}
-                />
-              </div>
-              {errors.email ? (
-                <p id="email-error" className="text-xs text-doku-rose">
-                  {errors.email}
-                </p>
-              ) : null}
-            </div>
-
-            <div className="space-y-2">
-              <label
-                className="text-xs font-semibold uppercase tracking-[0.2em] text-doku-dusty"
-                htmlFor="password"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                value={formValues.password}
-                onChange={handleChange}
-                className="w-full rounded-md border border-doku-dusty/30 bg-white px-4 py-3 text-sm text-doku-chocolate placeholder:text-doku-chocolate/40 focus:border-doku-rose focus:outline-none focus:ring-2 focus:ring-doku-rose/20"
-                placeholder="Enter your password"
-                autoComplete="current-password"
-                aria-invalid={Boolean(errors.password)}
-                aria-describedby={errors.password ? 'password-error' : undefined}
-              />
-              <p className="text-xs text-doku-chocolate/55">
-                Minimum 8 characters.
+            <div className="mt-10 grid gap-4">
+              <p className="text-xs uppercase tracking-[0.32em] text-muted-foreground">
+                Start your journey
               </p>
-              {errors.password ? (
-                <p id="password-error" className="text-xs text-doku-rose">
-                  {errors.password}
-                </p>
-              ) : null}
+              <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+                Sign in to DokuMind
+              </h1>
+              <p className="max-w-lg text-base leading-7 text-muted-foreground">
+                Access your company workspace, review documents, and keep
+                grounded answers flowing without losing tenant isolation.
+              </p>
             </div>
 
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full rounded-md bg-doku-rose px-4 py-3 text-sm font-semibold text-doku-cream shadow-card transition duration-200 hover:bg-doku-dusty"
-            >
-              {isSubmitting ? 'Signing in...' : 'Sign in'}
-            </button>
+            <Card className="mt-10 border-border/70 bg-card/80 shadow-[0_20px_50px_rgba(70,53,53,0.10)] backdrop-blur-xl">
+              <CardContent className="p-6 sm:p-8">
+                <form className="grid gap-5" onSubmit={handleSubmit} noValidate>
+                  <div className="grid gap-2">
+                    <label
+                      className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground"
+                      htmlFor="email"
+                    >
+                      Email
+                    </label>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={formValues.email}
+                      onChange={handleChange}
+                      className="h-11 w-full rounded-xl border border-border/70 bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground/80 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
+                      placeholder="you@company.com"
+                      autoComplete="email"
+                      aria-invalid={Boolean(errors.email)}
+                      aria-describedby={errors.email ? 'email-error' : undefined}
+                    />
+                    {errors.email ? (
+                      <p id="email-error" className="text-xs text-destructive">
+                        {errors.email}
+                      </p>
+                    ) : null}
+                  </div>
 
-            <div className="flex flex-col items-center gap-2 text-xs text-doku-chocolate/60 sm:flex-row sm:justify-between">
-              <span>New to DokuMind?</span>
-              <Link
-                to="/auth/signup"
-                className="font-semibold text-doku-rose hover:text-doku-dusty"
-              >
-                Create an account
-              </Link>
-            </div>
-          </form>
+                  <div className="grid gap-2">
+                    <label
+                      className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground"
+                      htmlFor="password"
+                    >
+                      Password
+                    </label>
+                    <input
+                      id="password"
+                      name="password"
+                      type="password"
+                      value={formValues.password}
+                      onChange={handleChange}
+                      className="h-11 w-full rounded-xl border border-border/70 bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground/80 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
+                      placeholder="Enter your password"
+                      autoComplete="current-password"
+                      aria-invalid={Boolean(errors.password)}
+                      aria-describedby={errors.password ? 'password-error' : undefined}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Minimum 8 characters.
+                    </p>
+                    {errors.password ? (
+                      <p id="password-error" className="text-xs text-destructive">
+                        {errors.password}
+                      </p>
+                    ) : null}
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="mt-1 inline-flex h-12 items-center justify-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-[0_12px_30px_rgba(157,116,116,0.25)] transition hover:bg-primary/90 disabled:opacity-50"
+                  >
+                    {isSubmitting ? 'Signing in...' : 'Sign in'}
+                  </button>
+
+                  <div className="flex flex-col gap-3 border-t border-border/60 pt-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+                    <span>New to DokuMind?</span>
+                    <Link
+                      to="/auth/signup"
+                      className="font-semibold text-primary transition hover:text-secondary"
+                    >
+                      Create an account
+                    </Link>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
         </section>
 
-        <section className="relative hidden lg:sticky lg:top-0 lg:block lg:h-screen">
-          <div className="absolute inset-0" style={panelBackground} />
-          <div className="relative flex h-full items-center justify-center p-10">
+        <section className="relative hidden overflow-hidden border-l border-border/60 lg:block">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(157,116,116,0.16),transparent_28%),radial-gradient(circle_at_80%_10%,rgba(129,91,91,0.12),transparent_26%),linear-gradient(140deg,#f7ecd9_0%,#ead7d0_42%,#d7bdbb_100%)]" />
+          <div className="absolute inset-0 opacity-45 mix-blend-soft-light">
+            <img src={heroArt} alt="" aria-hidden="true" className="h-full w-full object-cover object-center" />
+          </div>
+          <div className="relative flex h-full items-center justify-center p-12">
             <SecureWorkspaceWindow />
           </div>
         </section>

@@ -23,7 +23,7 @@ function UserPagination({
   onNext,
 }: UserPaginationProps) {
   return (
-    <div className="flex flex-col gap-3 border-t border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 border-t border-border/60 bg-muted/20 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
       <p className="text-xs text-muted-foreground">
         Page {currentPage} of {hasPages ? totalPages : 0}
       </p>

@@ -36,7 +36,7 @@ function UserManagement() {
         <CreateUserDialog onSuccess={refresh} />
       </UserManagementHeader>
 
-      <section className="rounded-xl border bg-card shadow-card">
+      <section className="overflow-hidden rounded-2xl border border-border/60 bg-card/80 shadow-[0_20px_50px_rgba(70,53,53,0.10)] backdrop-blur">
         <UserFilterBar onApply={applyFilters} onReset={resetFilters} />
         <UserTable users={users} isLoading={isLoading} error={error} onDelete={refresh} />
         <UserPagination
