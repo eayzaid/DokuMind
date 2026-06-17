@@ -67,7 +67,7 @@ function Button({
 
   return (
     <motion.button
-      whileHover={{ scale: 1.01 }}
+      whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       data-slot="button"
       data-variant={variant}

@@ -137,15 +137,15 @@ function CreateUserDialog({ onSuccess, roleOptions = CREATE_USER_ROLE_OPTIONS }:
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button size="sm" className="rounded-full px-4">
+        <Button size="sm" className="rounded-lg">
           Create user
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="border border-border/60 bg-card/95 text-foreground shadow-[0_24px_60px_rgba(70,53,53,0.16)] sm:max-w-[520px]">
+      <DialogContent className="border border-border bg-card text-foreground shadow-warm sm:max-w-[520px]">
         <DialogHeader>
-          <DialogTitle className="tracking-tight">Create user</DialogTitle>
-          <DialogDescription className="leading-6">
+          <DialogTitle>Create user</DialogTitle>
+          <DialogDescription>
             Add a new team member and assign their access role.
           </DialogDescription>
         </DialogHeader>

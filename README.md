@@ -25,21 +25,10 @@ graph TD
 Run the full stack from the repository root:
 
 ```bash
-cp .env.example .env
 docker compose up --build
 ```
 
-Docker Compose automatically reads `.env` from the repository root. Set the real values there before starting the stack:
-
-* `POSTGRES_PASSWORD`
-* `MINIO_ROOT_PASSWORD`
-* `GROQ_API_KEY`
-* `APPLICATION_SECRET_REFRESH_TOKEN`
-* `APPLICATION_SECRET_ACCESS_TOKEN`
-* `SPRING_MAIL_USERNAME`
-* `SPRING_MAIL_PASSWORD`
-
-The compose file wires the services together and uses those values at runtime.
+The compose file already wires the services together. Before sharing the stack publicly, replace the placeholder secrets and SMTP values in `docker-compose.yml`.
 
 ### Local URLs
 
@@ -81,7 +70,6 @@ Required settings include:
 ### RAG Pipeline
 
 ```bash
-cp RAGPipeline/.env.example RAGPipeline/.env
 cd RAGPipeline
 python3 -m venv venv
 source venv/bin/activate
@@ -94,7 +82,6 @@ Set `GROQ_API_KEY`, `GROQ_MODEL`, `CHROMA_HOST`, and `CHROMA_PORT` in `RAGPipeli
 ### Frontend
 
 ```bash
-cp FrontEnd/.env.example FrontEnd/.env
 cd FrontEnd
 npm install
 npm run dev

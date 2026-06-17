@@ -42,7 +42,7 @@ function UserFilterBar({ onApply, onReset }: UserFilterBarProps) {
   }
 
   return (
-    <div className="border-b border-border/60 bg-muted/20 px-6 py-4">
+    <div className="border-b border-border px-6 py-4">
       <form
         className="grid gap-3 md:grid-cols-[repeat(3,minmax(0,1fr))_auto]"
         onSubmit={handleSubmit}
@@ -66,7 +66,7 @@ function UserFilterBar({ onApply, onReset }: UserFilterBarProps) {
             handleChange('role', (val === 'all' ? '' : val) as FilterValues['role'])
           }
         >
-          <SelectTrigger className="h-11 w-full">
+          <SelectTrigger className="h-8">
             <SelectValue placeholder="All roles" />
           </SelectTrigger>
           <SelectContent position="popper">
@@ -78,16 +78,10 @@ function UserFilterBar({ onApply, onReset }: UserFilterBarProps) {
           </SelectContent>
         </Select>
         <div className="flex items-center gap-2">
-          <Button type="submit" size="sm" className="rounded-full px-4">
+          <Button type="submit" size="sm">
             Apply
           </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            onClick={handleReset}
-            className="rounded-full px-4"
-          >
+          <Button type="button" size="sm" variant="outline" onClick={handleReset}>
             Reset
           </Button>
         </div>

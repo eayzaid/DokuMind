@@ -36,55 +36,43 @@ export default function DocumentManagement() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-      <Card className="glass-surface border-border/60">
-        <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.26em] text-muted-foreground">
-              Knowledge base
-            </p>
-            <CardTitle className="text-2xl tracking-tight">
-              Document Management
-            </CardTitle>
-            <CardDescription className="max-w-2xl text-sm leading-6">
-              Upload PDF documents to index them into the organizational
-              knowledge base.
-            </CardDescription>
-          </div>
-
-          <div className="flex flex-col items-start gap-3 sm:items-end">
-            <DocumentUpload
-              isUploading={isUploading}
-              onFileChange={handleFileChange}
-              fileInputRef={fileInputRef}
-            />
-            <div className="grid gap-2 text-sm text-muted-foreground sm:text-right">
-              <span className="font-medium text-foreground">
-                {documents.length} indexed documents
-              </span>
-              <span>{totalChunks} chunks ready for retrieval</span>
-            </div>
-          </div>
-        </CardHeader>
-      </Card>
-
-      <Card className="overflow-hidden border-border/60 bg-card/80 shadow-[0_20px_50px_rgba(70,53,53,0.10)] backdrop-blur">
-        <CardHeader className="border-b border-border/60 px-6 py-5">
-          <CardTitle className="text-lg font-semibold tracking-tight">
-            Indexed Documents
-          </CardTitle>
-          <CardDescription>
-            A list of all documents currently available to the assistant.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="px-0 pb-0">
-          <DocumentTable
-            documents={documents}
-            onPreview={setPreviewFilename}
-            onDelete={handleDelete}
+    <div className="flex flex-col gap-6 max-w-5xl w-full mx-auto">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">Document Management</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Upload PDF documents to index them into the organizational knowledge base.
+          </p>
+        </div>
+        <div className="flex flex-col items-end gap-2">
+          <DocumentUpload 
+            isUploading={isUploading} 
+            onFileChange={handleFileChange} 
+            fileInputRef={fileInputRef} 
           />
-        </CardContent>
-      </Card>
+          <p className="text-sm font-medium text-muted-foreground">
+            {documents.length} indexed documents ({totalChunks} chunks)
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-6">
+        <Card className="bg-card border-border shadow-card">
+          <CardHeader className="p-6 pb-4">
+            <CardTitle className="text-lg font-semibold text-card-foreground">Indexed Documents</CardTitle>
+            <CardDescription>
+              A list of all documents currently available to the assistant.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="px-6 pb-6">
+            <DocumentTable 
+              documents={documents} 
+              onPreview={setPreviewFilename} 
+              onDelete={handleDelete} 
+            />
+          </CardContent>
+        </Card>
+      </div>
 
       <DocumentViewer 
         filename={previewFilename} 

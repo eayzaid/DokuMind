@@ -15,21 +15,21 @@ interface UserManagementHeaderProps {
  */
 function UserManagementHeader({ totalUsersLabel, children }: UserManagementHeaderProps) {
   return (
-    <section className="glass-surface rounded-2xl p-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-2">
+    <section className="rounded-xl border bg-card p-6 shadow-card">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
             User registry
           </p>
-          <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
-          <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+          <h1 className="mt-2 text-2xl font-semibold">Users</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
             Search and review the roles assigned to each workspace member.
           </p>
         </div>
 
-        <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
+        <div className="flex shrink-0 flex-col items-end gap-2">
           {children}
-          <div className="rounded-full border border-border/60 bg-background/80 px-3 py-1 text-xs text-muted-foreground backdrop-blur">
+          <div className="rounded-full border border-border bg-background px-3 py-1 text-xs text-muted-foreground">
             Total users: {totalUsersLabel}
           </div>
         </div>

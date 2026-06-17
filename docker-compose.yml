@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   postgres:
     image: 'postgres:15'
@@ -51,20 +53,17 @@ services:
       GROQ_MODEL: ${GROQ_MODEL}
       CHROMA_HOST: "chromadb"
       CHROMA_PORT: "8000"
+      HF_HUB_OFFLINE: "1"
+      TRANSFORMERS_OFFLINE: "1"
     ports:
       - "8001:8000"
     volumes:
       - ./RAGPipeline/chroma_db:/app/chroma_db
+      - ./RAGPipeline/.cache:/root/.cache
     depends_on:
       chromadb:
         condition: service_started
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)\""]
-      interval: 10s
-      timeout: 5s
-      retries: 12
-      start_period: 30s
 
   platformgateway:
     build:
@@ -87,11 +86,11 @@ services:
       RAG_PIPELINE_URL: http://ragpipeline:8000
     depends_on:
       postgres:
-        condition: service_started
-      minio:
-        condition: service_started
-      ragpipeline:
         condition: service_healthy
+      minio:
+        condition: service_healthy
+      ragpipeline:
+        condition: service_started
     restart: unless-stopped
 
   frontend:

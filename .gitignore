@@ -5,5 +5,3 @@ __pycache__/
 bin/
 docker-compose.yml
 .env
-FrontEnd/.env
-RAGPipeline/.env

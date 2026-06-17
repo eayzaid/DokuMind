@@ -41,7 +41,7 @@ export function DocumentTable({ documents, onPreview, onDelete }: DocumentTableP
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-muted/20 p-14 text-center"
+        className="flex flex-col items-center justify-center p-12 text-center border rounded-lg bg-muted/20 border-dashed"
       >
         <motion.div
           animate={{ y: [0, -10, 0] }}
@@ -49,10 +49,8 @@ export function DocumentTable({ documents, onPreview, onDelete }: DocumentTableP
         >
           <FileText className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
         </motion.div>
-        <h3 className="text-lg font-medium text-foreground">
-          No documents uploaded
-        </h3>
-        <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+        <h3 className="text-lg font-medium text-foreground">No documents uploaded</h3>
+        <p className="text-sm text-muted-foreground max-w-sm mt-1">
           Upload your first PDF document to begin processing it for the knowledge base.
         </p>
       </motion.div>
@@ -60,9 +58,9 @@ export function DocumentTable({ documents, onPreview, onDelete }: DocumentTableP
   }
 
   return (
-    <div className="overflow-hidden">
+    <div className="rounded-md border bg-card overflow-hidden">
       <Table>
-        <TableHeader className="bg-muted/40">
+        <TableHeader>
           <TableRow>
             <TableHead className="w-[400px]">Document Name</TableHead>
             <TableHead>Chunks</TableHead>

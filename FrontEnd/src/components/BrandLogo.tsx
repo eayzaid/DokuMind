@@ -3,10 +3,10 @@ import { cn } from '@/lib/utils'
 const LOGO_SRC = '/brand/final_cut_documind.png'
 
 const sizeClasses = {
-  sm: 'size-10 rounded-2xl p-1.5',
-  md: 'size-12 rounded-2xl p-1.5',
-  lg: 'size-14 rounded-3xl p-2',
-  xl: 'size-16 rounded-3xl p-2.5',
+  sm: 'size-9 rounded-xl p-1.5',
+  md: 'size-11 rounded-2xl p-1.5',
+  lg: 'size-14 rounded-2xl p-2',
+  xl: 'size-16 rounded-2xl p-2.5',
 } as const
 
 type BrandLogoSize = keyof typeof sizeClasses
@@ -36,7 +36,7 @@ export function BrandLogo({
     <div className={cn('flex items-center gap-3', className)}>
       <div
         className={cn(
-          'flex shrink-0 items-center justify-center overflow-hidden border border-border/60 bg-white/90 shadow-[0_10px_30px_rgba(70,53,53,0.08)] ring-1 ring-black/5 backdrop-blur',
+          'flex shrink-0 items-center justify-center overflow-hidden border border-border/70 bg-white/95 shadow-sm ring-1 ring-black/5',
           sizeClasses[size],
         )}
       >
@@ -72,3 +72,4 @@ export function BrandLogo({
     </div>
   )
 }
+

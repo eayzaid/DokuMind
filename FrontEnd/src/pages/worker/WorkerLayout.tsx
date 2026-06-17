@@ -19,8 +19,9 @@ function WorkerLayout() {
   }
 
   return (
-    <div className="flex min-h-svh flex-col bg-background/60 text-foreground">
-      <header className="sticky top-0 z-50 flex h-20 items-center justify-between border-b border-border/70 bg-background/85 px-8 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+    <div className="min-h-svh bg-background text-foreground flex flex-col">
+      {/* Top Navigation Bar */}
+      <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-6">
         <BrandLogo
           size="sm"
           label="DokuMind"
@@ -43,7 +44,8 @@ function WorkerLayout() {
         </div>
       </header>
 
-      <main className="mx-auto flex h-[calc(100svh-5rem)] w-full max-w-7xl flex-1 flex-col items-center px-8 py-8">
+      {/* Main Content Area (Centered Chat) */}
+      <main className="flex-1 flex flex-col items-center p-4 sm:p-6 lg:p-8 h-[calc(100svh-4rem)]">
         <Outlet />
       </main>
     </div>
