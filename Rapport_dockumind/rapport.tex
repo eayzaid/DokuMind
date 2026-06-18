@@ -396,7 +396,7 @@ Reset User Password       & \checkmark & \checkmark & --- & --- \\
 
 \section{The Microservices Design Philosophy}
 
-DokuMind deliberately separates concerns across three microservices, each chosen for its optimal fit to the task:
+DokuMind deliberately separates concerns across two microservices, each chosen for its optimal fit to the task:
 
 \begin{infobox}
 Different computational workloads require different runtimes. JWT validation, transactional database writes, and streaming proxying are best served by the JVM. Dense tensor embedding and neural model inference require Python's AI library ecosystem. Serving static assets requires a lightweight HTTP server like Nginx.
@@ -655,7 +655,7 @@ When the Access Token expires, the Axios interceptor in \texttt{AuthProvider.tsx
   \draw[{Latex[length=5pt]}-{Latex[length=5pt,open]}, thick, color=ABlue!70]
     (company.east) -- node[above,font=\sffamily\scriptsize,color=DarkEarth]{1 \quad\quad N}(usr.west);
   \draw[{Latex[length=5pt]}-{Latex[length=5pt,open]}, thick, color=DeepRose!70]
-    (usr.south) -- node[right,font=\sffamily\scriptsize,color=DarkEarth]{1 : 0..1} (rt.north);
+    (usr.south) -- node[right,font=\sffamily\scriptsize,color=DarkEarth]{1 : 0..N} (rt.north);
 
 \end{tikzpicture}
 \caption{PostgreSQL Entity Relationship Diagram showing the tenant isolation model.}
@@ -915,7 +915,6 @@ The \texttt{load\_pdf()} function wraps the incoming byte stream in a \texttt{By
   "content": "Full text of page N...",
   "metadata": {
     "filename": "employee_handbook.pdf",
-    "page": 7,
     "total_pages": 42
   }
 }
@@ -1229,6 +1228,57 @@ Self-Hosted LLM           & Low    & Ollama integration for air-gapped deploymen
 \bottomrule
 \end{tabularx}
 \end{table}
+
+% ==============================================================
+% ABBREVIATIONS & ACRONYMS
+% ==============================================================
+\clearpage
+\chapter*{Abbreviations \& Acronyms}
+\addcontentsline{toc}{chapter}{Abbreviations \& Acronyms}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\linewidth}{>{\bfseries\sffamily\color{DeepRose}}l X}
+\toprule
+\rowcolor{DarkEarth!10}
+\textcolor{black}{Acronym} & \textcolor{black}{Definition} \\
+\midrule
+RAG & Retrieval-Augmented Generation \\
+LLM & Large Language Model \\
+JWT & JSON Web Token \\
+API & Application Programming Interface \\
+SSE & Server-Sent Events \\
+RBAC & Role-Based Access Control \\
+ACL & Access Control List \\
+ORM & Object-Relational Mapping \\
+JPA & Java Persistence API \\
+HNSW & Hierarchical Navigable Small World (Vector Indexing) \\
+CORS & Cross-Origin Resource Sharing \\
+DTO & Data Transfer Object \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% ==============================================================
+% REFERENCES / WEBOGRAPHY
+% ==============================================================
+\clearpage
+\chapter*{References \& Webography}
+\addcontentsline{toc}{chapter}{References \& Webography}
+
+\begin{enumerate}[label={[\arabic*]}, itemsep=8pt]
+    \item \textbf{Spring Boot Documentation}, Pivotal Software. Available at: \url{https://spring.io/projects/spring-boot}
+    \item \textbf{React 19 Documentation}, Meta Open Source. Available at: \url{https://react.dev/}
+    \item \textbf{FastAPI Framework}, Sebastián Ramírez. Available at: \url{https://fastapi.tiangolo.com/}
+    \item \textbf{LangChain Python Framework}, Harrison Chase. Available at: \url{https://python.langchain.com/}
+    \item \textbf{ChromaDB — The AI-native open-source embedding database}. Available at: \url{https://www.trychroma.com/}
+    \item \textbf{Groq Cloud API Documentation}, Groq Inc. Available at: \url{https://groq.com/}
+    \item \textbf{MinIO Object Storage Documentation}, MinIO Inc. Available at: \url{https://min.io/}
+    \item \textbf{PostgreSQL Documentation}, PostgreSQL Global Development Group. Available at: \url{https://www.postgresql.org/}
+    \item \textbf{Tailwind CSS Documentation}, Tailwind Labs. Available at: \url{https://tailwindcss.com/}
+    \item \textbf{Sentence Transformers: Multilingual Sentence Embeddings}, Nils Reimers et al. Available at: \url{https://www.sbert.net/}
+\end{enumerate}
 
 \end{document}
 
