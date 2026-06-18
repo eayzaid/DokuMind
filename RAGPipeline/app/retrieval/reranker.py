@@ -1,4 +1,5 @@
 from sentence_transformers import CrossEncoder
+from app.core.config import settings
 from app.core.logging import get_logger
 
 logger = get_logger(__name__)
@@ -31,12 +32,16 @@ def rerank(question: str, chunks: list[dict]) -> list[dict]:
     pairs = [(question, chunk["content"]) for chunk in chunks]
     scores = reranker.predict(pairs)
 
-    # Attach reranker score to each chunk
+    # Attach reranker score to each chunk and filter garbage
+    valid_chunks = []
     for chunk, score in zip(chunks, scores):
-        chunk["reranker_score"] = float(score)
+        score_val = float(score)
+        chunk["reranker_score"] = score_val
+        if score_val >= settings.reranker_threshold:
+            valid_chunks.append(chunk)
 
     # Sort by reranker score descending
-    reranked = sorted(chunks, key=lambda x: x["reranker_score"], reverse=True)
+    reranked = sorted(valid_chunks, key=lambda x: x["reranker_score"], reverse=True)
 
     logger.info(f"Reranked {len(reranked)} chunks")
     for i, chunk in enumerate(reranked):

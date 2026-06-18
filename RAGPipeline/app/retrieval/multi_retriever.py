@@ -141,39 +141,41 @@ def search_multi(question: str, tenant_id: str) -> list[dict]:
         if cached_results is not None:
             return cached_results
 
-        direct_results = _collect_parent_chunks([question], tenant_id)
-        if len(direct_results) >= settings.top_k_after_rerank:
-            logger.info(
-                "Direct parent retrieval returned %d chunks; skipping query expansion",
-                len(direct_results),
-            )
-            _set_cached_retrieval(question, tenant_id, direct_results)
-            return direct_results
-
-        logger.info(
-            "Direct parent retrieval returned %d chunks; expanding the query",
-            len(direct_results),
-        )
+        logger.info("Expanding query for maximum recall...")
 
         retriever = get_multi_parent_retriever(tenant_id)
 
         try:
-            queries = retriever.llm_chain.invoke({"question": question})
-            if not isinstance(queries, list):
-                queries = [question]
-            else:
-                cleaned_queries = []
-                for q in queries:
-                    q_clean = q.strip()
-                    if not q_clean:
-                        continue
-                    import re
-                    match = re.match(r'^\d+[\.\)\s]+(.*)', q_clean)
-                    if match:
-                        q_clean = match.group(1).strip()
-                    if not q_clean.lower().startswith(("here are", "alternative versions", "questions:")):
-                        cleaned_queries.append(q_clean)
-                queries = cleaned_queries
+            raw_queries = retriever.llm_chain.invoke({"question": question})
+            queries_list = []
+            
+            if hasattr(raw_queries, "lines"):
+                queries_list = raw_queries.lines
+            elif isinstance(raw_queries, dict) and "text" in raw_queries:
+                val = raw_queries["text"]
+                queries_list = val if isinstance(val, list) else val.split("\n")
+            elif isinstance(raw_queries, str):
+                queries_list = raw_queries.split("\n")
+            elif isinstance(raw_queries, list):
+                queries_list = raw_queries
+
+            if not queries_list:
+                queries_list = [question]
+
+            cleaned_queries = []
+            import re
+            for q in queries_list:
+                q_clean = q.strip()
+                if not q_clean:
+                    continue
+                match = re.match(r'^\d+[\.\)\s]+(.*)', q_clean)
+                if match:
+                    q_clean = match.group(1).strip()
+                if not q_clean.lower().startswith(("here are", "alternative versions", "questions:")):
+                    cleaned_queries.append(q_clean)
+            
+            queries = cleaned_queries if cleaned_queries else [question]
+
         except Exception as e:
             logger.warning(f"Failed to generate query variations: {e} — using original question only")
             queries = [question]

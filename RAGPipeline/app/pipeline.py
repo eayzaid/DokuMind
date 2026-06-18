@@ -25,8 +25,12 @@ def prepare_rag_prompt(question: str, tenant_id: str, history: list = []) -> Opt
     if should_fallback(relevant_chunks):
         return None
     
-    # 3. Rerank using Cross-Encoder
+    # 3. Rerank using Cross-Encoder (filters bad chunks)
     relevant_chunks = rerank(question, relevant_chunks)
+    
+    # 3.b Check if all chunks were filtered out by the reranker
+    if should_fallback(relevant_chunks):
+        return None
     
     # 4. Slice to top K after rerank
     relevant_chunks = relevant_chunks[:settings.top_k_after_rerank]

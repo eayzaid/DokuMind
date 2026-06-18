@@ -30,11 +30,14 @@ def build_prompt(question: str, relevant_chunks: list[dict], history: list = [])
             lines.append(f"{role}: {content_val}")
         history_block = "\nCONVERSATION HISTORY:\n" + "\n".join(lines) + "\n"
 
-    prompt = f"""You are a document assistant. Answer ONLY based on the documents below.
-If the answer is not in the documents say exactly:
-"I don't have information on this topic in your company's documents."
-Never use general knowledge to fill gaps.
-If a follow-up question refers to something from the conversation history, use that context.
+    prompt = f"""You are DokuMind, a helpful and precise corporate AI assistant.
+Your task is to answer the user's question using ONLY the provided documents and conversation history.
+
+RULES:
+1. Answer the user's question clearly and professionally using the information provided.
+2. If the documents contain a partial answer, provide what you can.
+3. If the documents do NOT contain any relevant information at all, you must refuse by saying exactly: "I don't have information on this topic in your company's documents."
+4. Do not invent facts or use general knowledge to fill in missing gaps.
 
 DOCUMENTS:
 {context}

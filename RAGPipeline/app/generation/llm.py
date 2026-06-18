@@ -18,20 +18,14 @@ def generate(prompt: str) -> str:
         messages=[
             {
                 "role": "system",
-                "content": (
-                    "You are a document assistant. "
-                    "Answer ONLY based on the documents provided. "
-                    "If the answer is not in the documents, say exactly: "
-                    "'I don't have information on this topic in your company documents.' "
-                    "Never use general knowledge to fill gaps."
-                )
+                "content": "You are a helpful, intelligent corporate document assistant. Answer the user's question clearly and accurately using the provided context."
             },
             {
                 "role": "user",
                 "content": prompt
             }
         ],
-        temperature=0.1,
+        temperature=0.3,
         max_tokens=1024,
     )
     
@@ -48,20 +42,14 @@ def stream(prompt: str) -> Generator[str, None, None]:
         messages=[
             {
                 "role": "system",
-                "content": (
-                    "You are a document assistant. "
-                    "Answer ONLY based on the documents provided. "
-                    "If the answer is not in the documents, say exactly: "
-                    "'I don't have information on this topic in your company documents.' "
-                    "Never use general knowledge to fill gaps."
-                )
+                "content": "You are a helpful, intelligent corporate document assistant. Answer the user's question clearly and accurately using the provided context."
             },
             {
                 "role": "user",
                 "content": prompt
             }
         ],
-        temperature=0.1,
+        temperature=0.3,
         max_tokens=1024,
         stream=True,
     )

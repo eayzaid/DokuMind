@@ -18,7 +18,8 @@ class Settings(BaseSettings):
     # Retrieval
     similarity_threshold: float = 0.35
     top_k_results: int = 6
-    top_k_after_rerank: int = 3
+    top_k_after_rerank: int = 5
+    reranker_threshold: float = -100.0
     retrieval_cache_ttl_seconds: int = 60
 
     class Config:
